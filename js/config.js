@@ -7,7 +7,7 @@
 (function(){
   'use strict';
 
-  const API_BASE = 'https://galvabras-gestao-ti.vercel.app';
+  const API_BASE = 'https://grupogalvaqualidadeapp-nbwd.vercel.app';
   window.GV_API_BASE = API_BASE;
 
   /* Intercepta fetch para redirecionar /api/* para a Vercel */
