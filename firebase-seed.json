@@ -1,0 +1,19 @@
+{
+  "collections": {
+    "users": [],
+    "pending": [],
+    "sacs": [],
+    "permissoes": [],
+    "logs": [],
+    "tickets": [],
+    "rnc": []
+  },
+  "instrucoes": [
+    "1. Acesse https://console.firebase.google.com",
+    "2. Selecione o projeto qualidadegrupogalva",
+    "3. Vá em Firestore Database > Regras",
+    "4. Cole o conteúdo do arquivo firestore.rules",
+    "5. Crie as collections vazias: users, pending, sacs, permissoes, logs, tickets, rnc",
+    "6. No painel da Vercel, confirme que as variaveis FIREBASE_* estao definidas"
+  ]
+}

@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // USUÁRIOS
+    match /users/{userId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // CADASTROS PENDENTES
+    match /pending/{docId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+
+    // FUNCIONÁRIOS
+    match /funcionarios/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // SACs / CHAMADOS
+    match /sacs/{docId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+
+    // PERMISSÕES
+    match /permissoes/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // LOGS DE AUDITORIA
+    match /logs/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // TICKETS / CHAMADOS
+    match /tickets/{docId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+
+    // RNC
+    match /rnc/{docId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+
+    // Qualquer outra collection - autenticado
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
