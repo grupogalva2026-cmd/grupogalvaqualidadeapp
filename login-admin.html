@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galvabras · Login Administrador</title>
+<style>
+  body{font-family:Arial,sans-serif;background:#fff;color:#111;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{background:#fff;border-radius:20px;padding:40px 32px;width:min(400px,92vw);box-shadow:0 25px 50px rgba(0,0,0,.2)}
+  .logo{text-align:center;margin-bottom:14px}
+  .logo img{width:100px;height:auto}
+  h1{font-size:24px;color:#111;font-weight:700;margin:8px 0 4px;text-align:center}
+  .sub{font-size:14px;color:#666;text-align:center;margin-bottom:24px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:14px;font-weight:600;color:#333;margin-bottom:7px}
+  .field input{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:15px}
+  .btn{width:100%;padding:14px;border:none;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+  .btn:hover{background:#1e40af}
+  .msg{margin-top:14px;padding:10px;border-radius:8px;font-size:13px;display:none}
+  .err{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><img src="assets/logo_sistema.png" alt="Grupo Galva"></div>
+  <h1>Acesso · Administrador</h1>
+  <p class="sub">Área restrita para Administrador / T.I.</p>
+  <div id="msg" class="msg err"></div>
+  <form id="formLogin" onsubmit="return loginQualidade(event)">
+    <div class="field">
+      <label>Código de Login</label>
+      <input type="text" id="loginRG" placeholder="Código de login" required>
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="loginSenha" placeholder="Digite sua senha" required>
+    </div>
+    <button type="submit" class="btn" id="btnLogin">ENTRAR</button>
+  </form>
+</div>
+<script src="js/config.js"></script>
+<script>
+async function loginQualidade(ev){
+  ev.preventDefault();
+  var btn=document.getElementById('btnLogin');
+  var rg=document.getElementById('loginRG').value.trim();
+  var senha=document.getElementById('loginSenha').value;
+  var msg=document.getElementById('msg');
+  if(!rg||!senha){msg.className='msg err';msg.textContent='Informe código e senha.';msg.style.display='block';return false;}
+  btn.disabled=true;
+  msg.style.display='none';
+  try{
+    var res=await fetch('/api/qualidade?op=login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Galvabras-CSRF':'1'},
+      body:JSON.stringify({rg:rg,senha:senha})
+    });
+    var j=await res.json();
+    if(!res.ok){msg.className='msg err';msg.textContent=j.message||'Código ou senha incorretos.';msg.style.display='block';btn.disabled=false;return false;}
+    if(j.token)localStorage.setItem('qual_token',j.token);
+    localStorage.setItem('qual_user',JSON.stringify(j.usuario));
+    window.location.href='admin-qualidade.html';
+  }catch(err){
+    msg.className='msg err';msg.textContent='Erro de conexão com o servidor.';msg.style.display='block';btn.disabled=false;
+  }
+  return false;
+}
+</script>
+</body>
+</html>

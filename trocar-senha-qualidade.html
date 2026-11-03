@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galvabras · Trocar Senha Qualidade</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="logogrupo.jpeg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased}
+  body{font-family:'DM Sans',sans-serif;background:#f4f6f8;color:#111827;-webkit-font-smoothing:antialiased;background-image:url('imagem_editada.webp');background-size:cover;background-position:center;background-attachment:fixed}
+  .page{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .page::before{content:'';position:fixed;inset:0;background:rgba(244,246,248,.82);z-index:-1}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:40px 32px;width:min(440px,94vw);box-shadow:0 20px 40px rgba(15,23,42,.08)}
+  .logo{text-align:center;margin-bottom:10px}
+  .logo img{width:150px;height:auto}
+  .logo-sub{font-size:11px;letter-spacing:.12em;color:#64748b;text-transform:uppercase;line-height:1.4;display:block;margin-top:6px}
+  h1{font-size:24px;color:#111827;font-weight:700;margin:6px 0 4px;letter-spacing:-.3px}
+  h1 .brand{color:#2563eb}
+  .sub{font-size:14px;color:#475569;margin-bottom:26px;font-weight:400;line-height:1.5}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:14px;font-weight:600;color:#374151;margin-bottom:8px}
+  .field input{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+  .field input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .field input::placeholder{color:#9ca3af}
+  .field .hint{font-size:12px;color:#6b7280;margin-top:4px;display:block}
+  .btn{width:100%;padding:13px 16px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;font-size:16px;cursor:pointer;transition:background .2s}
+  .btn:hover{background:#1d4ed8}
+  .btn:active{background:#1e40af}
+  .btn:disabled{opacity:.65;cursor:not-allowed}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(37,99,235,.3);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:8px;font-size:13px;display:none;margin-bottom:16px}
+  .success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:10px 12px;border-radius:8px;font-size:13px;display:none;margin-bottom:16px}
+  .alt{text-align:center;margin-top:22px}
+  .alt a{color:#2563eb;text-decoration:none;font-size:13px}
+  .alt a:hover{text-decoration:underline}
+  .footer{margin-top:26px;text-align:center;font-size:12px;color:#6b7280}
+  .footer b{color:#374151}
+  .primeiro{background:#fffbeb;border:1px solid #fde68a;color:#713f12;padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:20px;display:none}
+  .pw-meter{height:4px;background:#e5e7eb;border-radius:2px;margin:8px 0;overflow:hidden}
+  .pw-bar{height:100%;width:0%;background:#2563eb;transition:width .3s}
+  .pw-hint{font-size:12px;color:#6b7280}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="card">
+    <div class="logo">
+      <img src="logogrupo.jpeg" alt="Grupo Galva - Galvanização a Fogo">
+      <span class="logo-sub">GRUPO GALVA · GALVANIZAÇÃO A FOGO</span>
+    </div>
+    <h1>Trocar Senha · <span class="brand">Qualidade</span></h1>
+
+    <div id="pwErro" class="error"></div>
+    <div id="pwSucesso" class="success"></div>
+
+    <div id="primeiroAviso" class="primeiro">
+      <strong>Primeiro acesso:</strong> use a senha temporária entregue pela T.I. e crie sua senha própria.
+    </div>
+
+    <form id="formTrocar" onsubmit="return trocarSenha(event)">
+      <input type="hidden" id="modo" value="primeiro">
+
+      <div class="field" id="fieldAtual" style="display:none">
+        <label for="twSenhaAtual">Senha atual</label>
+        <input type="password" id="twSenhaAtual" placeholder="Digite sua senha atual" required>
+      </div>
+
+      <div class="field">
+        <label for="twNovaSenha">Nova senha</label>
+        <input type="password" id="twNovaSenha" placeholder="Mínimo 6 caracteres" required>
+        <div class="pw-meter"><div class="pw-bar" id="pwBar"></div></div>
+        <div class="pw-hint" id="pwHint">Use letras, números e um caractere especial.</div>
+      </div>
+      <div class="field">
+        <label for="twConfirmarSenha">Confirmar nova senha</label>
+        <input type="password" id="twConfirmarSenha" placeholder="Repita a nova senha" required>
+      </div>
+
+      <button type="submit" class="btn" id="btnTrocar"><span class="btn-txt">Definir senha</span></button>
+      <div class="login-spinner" id="twSpinner" style="display:none;text-align:center;margin-top:10px"><span class="spinner"></span> Processando…</div>
+    </form>
+
+    <div class="alt">
+      <a href="login-qualidade.html">← Voltar ao login</a>
+    </div>
+
+    <div class="footer">
+      © <span id="twYear">2026</span> <b>Grupo Galva</b> — Galvanização a Fogo · Guarulhos/SP
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+const urlParams=new URLSearchParams(location.search);
+const rgParam=urlParams.get('rg')||'';
+const tokenParam=urlParams.get('token')||'';
+const modo=urlParams.get('modo')||(tokenParam?'primeiro':'normal');
+
+document.getElementById('modo').value=modo;
+document.getElementById('primeiroAviso').style.display=modo==='primeiro'?'block':'none';
+
+const campoAtual=document.getElementById('fieldAtual');
+const btnTxt=document.querySelector('#btnTrocar .btn-txt');
+
+if(modo==='primeiro'){
+  campoAtual.style.display='none';
+  btnTxt.textContent='Definir minha senha';
+  document.getElementById('twNovaSenha').focus();
+} else {
+  campoAtual.style.display='block';
+  btnTxt.textContent='Trocar senha';
+  document.getElementById('twSenhaAtual').focus();
+}
+
+document.getElementById('twYear').textContent=String(new Date().getFullYear());
+
+const novaSenha=document.getElementById('twNovaSenha');
+const pwBar=document.getElementById('pwBar');
+const pwHint=document.getElementById('pwHint');
+
+novaSenha.addEventListener('input',function(){
+  const v=novaSenha.value;
+  let sc=0;
+  if(v.length>=6)sc++;
+  if(v.length>=10)sc++;
+  if(/[A-Z]/.test(v)&&/[a-z]/.test(v))sc++;
+  if(/\d/.test(v))sc++;
+  if(/[^\w\s]/.test(v))sc++;
+  const lv=Math.min(4,Math.floor(sc/1.6));
+  const cols=['#ef4444','#f59e0b','#eab308','#22c55e','#22c55e'];
+  pwBar.style.width=(lv+1)*20+'%';
+  pwBar.style.background=cols[lv];
+  pwHint.textContent=v?('Força: '+['Muito fraca','Fraca','Razoável','Forte','Muito forte'][lv]):'Use letras, números e um caractere especial.';
+  pwHint.style.color=v?cols[lv]:'';
+});
+
+function mostrarErro(msg){
+  const el=document.getElementById('pwErro');
+  const su=document.getElementById('pwSucesso');
+  if(el){el.textContent=msg;el.style.display='block';}
+  if(su)su.style.display='none';
+}
+
+function mostrarSucesso(msg){
+  const el=document.getElementById('pwSucesso');
+  const er=document.getElementById('pwErro');
+  if(el){el.textContent=msg;el.style.display='block';}
+  if(er)er.style.display='none';
+}
+
+async function trocarSenha(ev){
+  ev.preventDefault();
+  const btn=document.getElementById('btnTrocar');
+  const spn=document.getElementById('twSpinner');
+  const modo=document.getElementById('modo').value;
+  const nova=document.getElementById('twNovaSenha').value;
+  const conf=document.getElementById('twConfirmarSenha').value;
+
+  if(!nova||nova.length<6){mostrarErro('A nova senha deve ter no mínimo 6 caracteres.');return}
+  if(nova!==conf){mostrarErro('As senhas não conferem.');return}
+
+  const rg=rgParam;
+  const token=tokenParam;
+  const senhaAtual=document.getElementById('twSenhaAtual').value;
+
+  try{
+    btn.disabled=true;
+    if(spn)spn.style.display='block';
+    mostrarErro('');
+
+    let body;
+    if(modo==='primeiro'){
+      // Primeiro login: RG + senha temporaria + nova senha
+      if(!rg||!token){mostrarErro('Dados de primeiro acesso não encontrados.');return}
+      body={rg,tokenTemporario:token,novaSenha:nova,confirmarSenha:conf};
+    } else {
+      // Troca normal: precisa sessão
+      const tok=localStorage.getItem('qual_token');
+      if(!tok){mostrarErro('Sessão expirada. Faça login novamente.');return}
+      body={senhaAtual,novaSenha:nova,confirmarSenha:conf};
+    }
+
+    const res=await fetch('/api/qualidade?op=trocar-senha',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Galvabras-CSRF':'1',...(modo!=='primeiro'?{Authorization:'Bearer '+tok}:{})},
+      body:JSON.stringify(body)
+    });
+    const j=await res.json();
+    if(!res.ok){mostrarErro(j.message||'Não foi possível trocar a senha.');return}
+
+    if(modo==='primeiro'){
+      mostrarSucesso('Senha definida com sucesso! Redirecionando...');
+      setTimeout(()=>{window.location.href='login-qualidade.html';},1200);
+    } else {
+      mostrarSucesso('Senha alterada com sucesso!');
+    }
+  }catch(err){
+    mostrarErro('Erro inesperado. Tente novamente.');
+  }finally{
+    btn.disabled=false;
+    if(spn)spn.style.display='none';
+  }
+}
+</script>
+</body>
+</html>

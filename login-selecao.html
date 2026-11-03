@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galvabras · Qualidade</title>
+<style>
+  body{font-family:Arial,sans-serif;background:#0a1628;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+  .container{background:#fff;color:#111;border-radius:24px;padding:40px 32px;width:min(600px,92vw);box-shadow:0 25px 50px rgba(0,0,0,.3)}
+  .logo{text-align:center;margin-bottom:14px}
+  .logo img{width:120px;height:auto}
+  h1{font-size:26px;color:#111;font-weight:700;margin:8px 0 4px;text-align:center}
+  .sub{font-size:14px;color:#666;text-align:center;margin-bottom:26px}
+  .options{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+  .opt{border:2px solid #2563eb;border-radius:16px;padding:32px 28px;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;color:#fff;width:min(240px,100%)}
+  .opt:hover{background:#2563eb;transform:translateY(-2px)}
+  .opt.func{border-color:#065f46;background:#065f46}
+  .opt.admin{border-color:#1d4ed8;background:#1d4ed8}
+  .opt-icon{font-size:44px;display:block;margin-bottom:12px}
+  .opt-title{font-size:18px;font-weight:700;margin-bottom:8px}
+  .opt-desc{font-size:13px;line-height:1.5}
+  .footer{margin-top:24px;font-size:12px;color:#666;text-align:center}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo"><img src="assets/logo_sistema.png" alt="Grupo Galva"></div>
+  <h1>Sistema de Qualidade</h1>
+  <p class="sub">Selecione o tipo de acesso</p>
+  <div class="options">
+    <a href="login-qualidade.html" class="opt func">
+      <span class="opt-icon">👷</span>
+      <div class="opt-title">Funcionário</div>
+      <div class="opt-desc">Acesso para equipe de qualidade</div>
+    </a>
+    <a href="login-admin.html" class="opt admin">
+      <span class="opt-icon">🛡️</span>
+      <div class="opt-title">Administrador / T.I.</div>
+      <div class="opt-desc">Gestão de usuários e sistema</div>
+    </a>
+  </div>
+</div>
+</body>
+</html>

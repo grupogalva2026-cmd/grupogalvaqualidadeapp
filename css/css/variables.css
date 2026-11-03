@@ -1,0 +1,134 @@
+/* ===== CSS Variables & Theme =====
+   Todos os valores de cor do sistema passam por tokens.
+   As razoes de contraste (WCAG 2.1) foram calculadas para os DOIS temas:
+     - texto normal (AA):  >= 4,5:1
+     - texto grande (AA-3): >= 3:1
+     - bordas de controle:  >= 3:1
+   ========================================================================== */
+:root {
+  /* --- superficies --- */
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --bg3: #1a2235;
+  --bg4: #1f2a40;
+  --bgs: #0d1321;
+  --bd: #1e293b;
+  --bd2: #2a3a52;
+  --bd-strong: #4a5f7f;
+
+  /* --- texto --- */
+  --t1: #f1f5f9;
+  --t2: #94a3b8;
+  --t3: #8b9bb4;
+
+  /* --- cores de destaque --- */
+  --ac: #3b82f6;
+  --acg: rgba(59, 130, 246, .15);
+  --ac-text: #93c5fd;
+  --ac2: #06d6a0;
+  --d: #ef4444;
+  --db: rgba(239, 68, 68, .1);
+  --d-text: #fca5a5;
+  --s: #10b981;
+  --sb: rgba(16, 185, 129, .1);
+  --s-text: #34d399;
+  --w: #f59e0b;
+  --wb: rgba(245, 158, 11, .1);
+  --w-text: #fbbf24;
+  --i: #3b82f6;
+  --ib: rgba(59, 130, 246, .1);
+
+  /* --- estrutura --- */
+  --sw: 260px;
+  --hh: 64px;
+  --r: 12px;
+  --rs: 8px;
+  --sh: 0 4px 24px rgba(0, 0, 0, .3);
+  --tr: .2s cubic-bezier(.4, 0, .2, 1);
+
+  /* --- fundos com gradiente (tokens para o tema claro poder inverter) --- */
+  --bg-page: linear-gradient(180deg, #0e1b2e 0%, #111f35 50%, #0e1b2e 100%);
+  --surface-grad: linear-gradient(90deg, #0f1f35, #0c1929);
+  --surface-grad-2: linear-gradient(90deg, #0c1929, #101e33);
+
+  /* --- acessibilidade --- */
+  --focus: #fbbf24;
+  --focus-w: 3px;
+  --on-ac: #ffffff;
+  --tap: 44px;
+
+  /* ===== Paleta de Marca Galva ===== */
+  --galva-blue: #003C7D;
+  --galva-orange: #F08220;
+  --galva-prata: #A9CDCE;
+  --galva-grey: #8F8F8F;
+  --galva-orquidea: #D2D2D2;
+  --galva-white: #FEFEFE;
+
+  /* ===== Aba Qualidade (derivados da marca) ===== */
+  --qd-ac: var(--galva-blue);
+  --qd-or: var(--galva-orange);
+  --qd-red: var(--galva-blue);
+  --qd-green: var(--galva-prata);
+  --qd-purple: var(--galva-orquidea);
+  --qd-yellow: var(--galva-orange);
+  --qq-border: #8F8F8F;
+
+  /* Login Page Colors - Galva Style */
+  --login-bg-deep: #0a1628;
+  --login-bg-mid: #0d1f3c;
+  --login-accent: #E8611A;
+  --login-accent-light: #f59e0b;
+  --login-surface: rgba(13, 31, 60, .85);
+  --login-border: rgba(59, 130, 246, .12);
+  --login-border-hover: rgba(232, 97, 26, .35);
+  --login-glow: rgba(232, 97, 26, .15);
+}
+
+/* ==========================================================================
+   TEMA CLARO
+   Correcoes aplicadas (antes estas cores deixavam a tela ILEGIVEL):
+     - body/main usavam #0e1b2e fixo com --t1 escuro  -> razao 1,03:1
+     - --bgs era #0f172a (fundo ESCURO no tema claro) -> tabela invisivel
+     - --t3 era #94a3b8 -> 2,32:1 (precisa 4,5:1)
+   ========================================================================== */
+[data-theme="light"] {
+  --bg: #f0f4f8;
+  --bg2: #ffffff;
+  --bg3: #ffffff;
+  --bg4: #eef2f7;
+  --bgs: #ffffff;
+  --bd: #e2e8f0;
+  --bd2: #cbd5e1;
+  --bd-strong: #8494a8;
+
+  --t1: #0f172a;
+  --t2: #475569;
+  --t3: #5b6b80;
+
+  --ac: #2563eb;
+  --acg: rgba(37, 99, 235, .12);
+  --ac-text: #1d4ed8;
+  --ac2: #047857;
+  --d: #dc2626;
+  --db: rgba(220, 38, 38, .1);
+  --d-text: #b91c1c;
+  --s: #059669;
+  --sb: rgba(5, 150, 105, .12);
+  --s-text: #047857;
+  --w: #d97706;
+  --wb: rgba(217, 119, 6, .14);
+  --w-text: #b45309;
+  --i: #2563eb;
+  --ib: rgba(37, 99, 235, .12);
+
+  --sh: 0 4px 24px rgba(15, 23, 42, .08);
+  --bg-page: linear-gradient(180deg, #f7fafc 0%, #eef2f7 50%, #f7fafc 100%);
+  --surface-grad: linear-gradient(90deg, #ffffff, #f8fafc);
+  --surface-grad-2: linear-gradient(90deg, #f8fafc, #ffffff);
+
+  --focus: #b45309;
+  --on-ac: #ffffff;
+
+  --qq-border: #8494a8;
+}

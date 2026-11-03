@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galvabras · Admin Qualidade</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="logogrupo.jpeg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased}
+  body{font-family:'DM Sans',sans-serif;background:#f4f6f8;color:#111827;-webkit-font-smoothing:antialiased}
+  .topbar{background:#1e293b;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155}
+  .topbar .brand{font-weight:700;font-size:18px;display:flex;align-items:center;gap:10px}
+  .topbar .brand img{width:32px;height:auto}
+  .topbar .user{font-size:13px;opacity:.9}
+  .topbar .logout{background:#334155;border:1px solid #475569;color:#fff;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;text-decoration:none}
+  .topbar .logout:hover{background:#475569}
+  .container{max-width:1200px;margin:0 auto;padding:24px}
+  h2{font-size:20px;color:#111827;margin-bottom:8px}
+  .sub{font-size:14px;color:#6b7280;margin-bottom:24px}
+  .tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid #e2e8f0}
+  .tab{padding:10px 16px;background:#fff;border:1px solid #e2e8f0;border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;font-size:14px;color:#64748b;font-weight:600}
+  .tab.active{border-color:#2563eb;color:#2563eb;border-bottom:2px solid #2563eb}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 4px 6px rgba(15,23,42,.04)}
+  .card h3{font-size:15px;margin-bottom:16px;color:#111827;display:flex;align-items:center;gap:8px}
+  .btn{padding:8px 14px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+  .btn-primary{background:#2563eb;color:#fff}
+  .btn-primary:hover{background:#1d4ed8}
+  .btn-success{background:#15803d;color:#fff}
+  .btn-success:hover{background:#14532d}
+  .btn-danger{background:#dc2626;color:#fff}
+  .btn-danger:hover{background:#b91c1c}
+  .btn-outline{background:#fff;border:1px solid #d1d5db;color:#374151}
+  .btn-outline:hover{border-color:#2563eb;color:#2563eb}
+  .btn-sm{padding:6px 12px;font-size:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:12px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600}
+  td{padding:12px;border-bottom:1px solid #f1f5f9}
+  tr:hover{background:#fafafa}
+  .badge{display:inline-block;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:700}
+  .badge-pendente{background:#fef3c7;color:#92400e}
+  .badge-aprovado{background:#d1fae5;color:#065f46}
+  .badge-aberto{background:#bfdbfe;color:#1e3a8a}
+  .badge-respondido{background:#d1fae5;color:#065f46}
+  .badge-master{background:#e0e7ff;color:#3730a3}
+  .badge-funcionario{background:#f1f5f9;color:#475569}
+  .empty{text-align:center;padding:40px;color:#6b7280}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:768px){.form-row{grid-template-columns:1fr}}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+  .field input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:14px}
+  .field input:focus{border-color:#2563eb;outline:none}
+  .actions{display:flex;gap:8px;margin-top:16px}
+  .error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:8px;font-size:13px;display:none;margin-bottom:16px}
+  .success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:10px 12px;border-radius:8px;font-size:13px;display:none;margin-bottom:16px}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(37,99,235,.3);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:100;align-items:center;justify-content:center}
+  .modal.active{display:flex}
+  .modal-box{background:#fff;border-radius:12px;padding:24px;width:min(500px,92vw);max-height:90vh;overflow-y:auto}
+  .modal-box h3{font-size:16px;margin-bottom:16px}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+  .checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .checkbox-row input{width:16px;height:16px}
+  .user-chip{display:flex;align-items:center;gap:8px}
+  .avatar{width:32px;height:32px;background:#e0e7ff;color:#3730a3;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <img src="logogrupo.jpeg" alt="Grupo Galva">
+    <span>Admin · Qualidade</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span class="user" id="userInfo">Carregando…</span>
+    <a href="#" class="logout" onclick="return logout()">Sair</a>
+  </div>
+</div>
+
+<div class="container">
+  <div id="appErro" class="error"></div>
+  <div id="appSucesso" class="success"></div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="abrirAba('pendentes')">Cadastros Pendentes</div>
+    <div class="tab" onclick="abrirAba('funcionarios')">Funcionários</div>
+    <div class="tab" onclick="abrirAba('sacs')">SACs (Atendimento)</div>
+    <div class="tab" onclick="abrirAba('permissoes')">Permissões</div>
+  </div>
+
+  <!-- Pendentes -->
+  <div class="tab-content active" id="aba-pendentes">
+    <div class="card">
+      <h3>📋 Cadastros aguardando aprovação</h3>
+      <div id="pendentesLista" class="empty">Carregando…</div>
+    </div>
+  </div>
+
+  <!-- Funcionários -->
+  <div class="tab-content" id="aba-funcionarios">
+    <div class="card">
+      <h3>👥 Funcionários cadastrados</h3>
+      <div id="funcionariosLista" class="empty">Carregando…</div>
+    </div>
+  </div>
+
+  <!-- SACs -->
+  <div class="tab-content" id="aba-sacs">
+    <div class="card">
+      <h3>📞 Chamados SAC</h3>
+      <div id="sacsLista" class="empty">Carregando…</div>
+    </div>
+  </div>
+
+  <!-- Permissões -->
+  <div class="tab-content" id="aba-permissoes">
+    <div class="card">
+      <h3>🔐 Permissões por área</h3>
+      <p class="sub">Bloqueie ou libere áreas do sistema para cada funcionário.</p>
+      <div id="permissoesLista" class="empty">Carregando…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal aprovar -->
+<div class="modal" id="modalAprovar">
+  <div class="modal-box">
+    <h3>✅ Aprovar cadastro</h3>
+    <form id="formAprovar" onsubmit="return aprovarCadastro(event)">
+      <input type="hidden" id="apCadId">
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" id="apNome" readonly>
+      </div>
+      <div class="field">
+        <label>RG</label>
+        <input type="text" id="apRG" readonly>
+      </div>
+      <div class="field">
+        <label>E-mail de login</label>
+        <input type="email" id="apEmail" placeholder="nome@empresa.com" required>
+      </div>
+      <div class="field">
+        <label>Senha temporária</label>
+        <input type="password" id="apSenhaTemp" placeholder="Deixe em branco para gerar automaticamente">
+        <span style="font-size:12px;color:#6b7280">Exibida apenas uma vez ao salvar.</span>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="fecharModal('modalAprovar')">Cancelar</button>
+        <button type="submit" class="btn btn-success">Gerar acesso</button>
+      </div>
+    </form>
+    <div id="apSenhaMostrada" style="margin-top:16px;padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;display:none">
+      <strong>Senha temporária:</strong> <span id="apSenhaValor" style="font-family:monospace;font-weight:700"></span><br>
+      <small style="color:#166534">Entregue esta senha ao funcionário. Não será exibida novamente.</small>
+    </div>
+  </div>
+</div>
+
+<!-- Modal redefinir senha -->
+<div class="modal" id="modalRedefinir">
+  <div class="modal-box">
+    <h3>🔑 Redefinir senha</h3>
+    <form id="formRedefinir" onsubmit="return redefinirSenha(event)">
+      <input type="hidden" id="redefId">
+      <div class="field">
+        <label>Funcionário</label>
+        <input type="text" id="redefNome" readonly>
+      </div>
+      <div class="field">
+        <label>Nova senha</label>
+        <input type="password" id="redefSenha" placeholder="Mínimo 6 caracteres" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="fecharModal('modalRedefinir')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Redefinir</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal responder SAC -->
+<div class="modal" id="modalResponderSac">
+  <div class="modal-box">
+    <h3>💬 Responder SAC</h3>
+    <form id="formResponderSac" onsubmit="return responderSac(event)">
+      <input type="hidden" id="sacId">
+      <div class="field">
+        <label>Assunto</label>
+        <input type="text" id="sacAssunto" readonly>
+      </div>
+      <div class="field">
+        <label>Solicitante</label>
+        <input type="text" id="sacNome" readonly>
+      </div>
+      <div class="field">
+        <label>Descrição</label>
+        <textarea id="sacDescricao" readonly rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;background:#f8fafc"></textarea>
+      </div>
+      <div class="field">
+        <label>Sua resposta</label>
+        <textarea id="sacResposta" rows="4" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px" required></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="fecharModal('modalResponderSac')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Enviar resposta</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal definir permissões -->
+<div class="modal" id="modalPermissoes">
+  <div class="modal-box">
+    <h3>🔐 Definir permissões</h3>
+    <form id="formPermissoes" onsubmit="return salvarPermissoes(event)">
+      <input type="hidden" id="permId">
+      <div class="field">
+        <label>Funcionário</label>
+        <input type="text" id="permNome" readonly>
+      </div>
+      <div style="max-height:300px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;padding:12px;background:#f8fafc">
+        <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:10px">Áreas do sistema:</label>
+        <div id="permAreas"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="fecharModal('modalPermissoes')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar permissões</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+const API='/api/qualidade';
+let token=localStorage.getItem('qual_token');
+
+function headers(extra={}){
+  const h={'Content-Type':'application/json','X-Galvabras-CSRF':'1',...extra};
+  if(token)h['Authorization']='Bearer '+token;
+  return h;
+}
+
+function mostrarErro(msg){
+  const el=document.getElementById('appErro');
+  if(el){el.textContent=msg;el.style.display='block';}
+}
+function mostrarSucesso(msg){
+  const el=document.getElementById('appSucesso');
+  if(el){el.textContent=msg;el.style.display='block';}
+}
+function limparMensagens(){
+  document.getElementById('appErro').style.display='none';
+  document.getElementById('appSucesso').style.display='none';
+}
+
+async function carregarUsuario(){
+  try{
+    const res=await fetch(API+'?op=session',{headers:headers()});
+    if(!res.ok){localStorage.removeItem('qual_token');location.href='login-qualidade.html';return}
+    const j=await res.json();
+    document.getElementById('userInfo').textContent=(j.usuario.nome||'')+' (master)';
+    return j.usuario;
+  }catch(e){location.href='login-qualidade.html'}
+}
+
+async function carregarDados(){
+  limparMensagens();
+  await carregarUsuario();
+  carregarPendentes();
+  carregarFuncionarios();
+  carregarSacs();
+  carregarPermissoes();
+}
+
+function abrirAba(nome){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('aba-'+nome).classList.add('active');
+}
+
+async function carregarPendentes(){
+  const el=document.getElementById('pendentesLista');
+  try{
+    const res=await fetch(API+'?op=list-cadastros',{headers:headers()});
+    if(!res.ok){el.innerHTML='<div class="error">Erro ao carregar cadastros.</div>';return}
+    const j=await res.json();
+    const lista=j.cadastros||[];
+    if(!lista.length){el.innerHTML='<div class="empty">Nenhum cadastro pendente.</div>';return}
+    let html='<table><thead><tr><th>Nome</th><th>RG</th><th>Solicitado em</th><th>Ação</th></tr></thead><tbody>';
+    lista.forEach(c=>{
+      const data=new Date(c.createdAt||0).toLocaleString('pt-BR');
+      html+=`<tr>
+        <td>${c.nome} ${c.sobrenome||''}</td>
+        <td>${c.rg}</td>
+        <td>${data}</td>
+        <td><button class="btn btn-success btn-sm" onclick="abrirAprovar('${c.id}','${c.nome}','${c.sobrenome||''}','${c.rg}')">Aprovar</button></td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div class="error">Erro ao carregar.</div>';}
+}
+
+async function carregarFuncionarios(){
+  const el=document.getElementById('funcionariosLista');
+  try{
+    const res=await fetch(API+'?op=list-funcionarios',{headers:headers()});
+    if(!res.ok){el.innerHTML='<div class="error">Erro ao carregar funcionários.</div>';return}
+    const j=await res.json();
+    const lista=j.funcionarios||[];
+    if(!lista.length){el.innerHTML='<div class="empty">Nenhum funcionário cadastrado.</div>';return}
+    let html='<table><thead><tr><th>Nome</th><th>RG</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Primeiro login</th><th>Ação</th></tr></thead><tbody>';
+    lista.forEach(f=>{
+      const inicial=(f.nome.charAt(0)+(f.sobrenome?f.sobrenome.charAt(0):''));
+      html+=`<tr>
+        <td><div class="user-chip"><div class="avatar">${inicial.toUpperCase()}</div>${f.nome} ${f.sobrenome||''}</div></td>
+        <td>${f.rg}</td>
+        <td>${f.email}</td>
+        <td><span class="badge ${f.perfil==='master'?'badge-master':'badge-funcionario'}">${f.perfil||'funcionario'}</span></td>
+        <td><span class="badge badge-${f.status==='approved'?'aprovado':'pendente'}">${f.status}</span></td>
+        <td>${f.firstLogin?'Sim':'Não'}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="abrirRedefinir('${f.id}','${f.nome} ${f.sobrenome||''}')">Redefinir senha</button>
+          <button class="btn btn-outline btn-sm" onclick="abrirPermissoes('${f.id}','${f.nome} ${f.sobrenome||''}')">Permissões</button>
+        </td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div class="error">Erro ao carregar.</div>';}
+}
+
+async function carregarSacs(){
+  const el=document.getElementById('sacsLista');
+  try{
+    const res=await fetch(API+'?op=sac-listar',{headers:headers()});
+    if(!res.ok){el.innerHTML='<div class="error">Erro ao carregar SACs.</div>';return}
+    const j=await res.json();
+    const lista=j.sacs||[];
+    if(!lista.length){el.innerHTML='<div class="empty">Nenhum chamado SAC.</div>';return}
+    let html='<table><thead><tr><th>Solicitante</th><th>Assunto</th><th>Status</th><th>Criado em</th><th>Ação</th></tr></thead><tbody>';
+    lista.forEach(s=>{
+      const data=new Date(s.criadoEm||0).toLocaleString('pt-BR');
+      html+=`<tr>
+        <td>${s.nome}</td>
+        <td>${s.assunto}</td>
+        <td><span class="badge badge-${s.status==='respondido'?'respondido':'aberto'}">${s.status}</span></td>
+        <td>${data}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="abrirResponderSac('${s.id}','${s.assunto}','${s.nome}','${s.descricao||''}')">Responder</button></td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div class="error">Erro ao carregar.</div>';}
+}
+
+async function carregarPermissoes(){
+  const el=document.getElementById('permissoesLista');
+  try{
+    const res=await fetch(API+'?op=permissoes&acao=listar',{headers:headers()});
+    if(!res.ok){el.innerHTML='<div class="error">Erro ao carregar permissões.</div>';return}
+    const j=await res.json();
+    const lista=j.permissoes||[];
+    if(!lista.length){el.innerHTML='<div class="empty">Nenhuma permissão definida ainda. Todas as áreas estão bloqueadas por padrão.</div>';return}
+    let html='<table><thead><tr><th>Funcionário</th><th>Áreas liberadas</th><th>Ação</th></tr></thead><tbody>';
+    lista.forEach(p=>{
+      const areas=p.areas||{};
+      const ativas=Object.entries(areas).filter(([k,v])=>v).map(([k])=>k).join(', ')||'Nenhuma';
+      html+=`<tr>
+        <td>${p.usuarioNome||p.usuarioId}</td>
+        <td>${ativas}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="abrirPermissoes('${p.usuarioId}','${p.usuarioNome||p.usuarioId}')">Editar</button></td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div class="error">Erro ao carregar.</div>';}
+}
+
+// --- Aprovar cadastro ---
+function abrirAprovar(id,nome,sobrenome,rg){
+  document.getElementById('apCadId').value=id;
+  document.getElementById('apNome').value=nome+' '+sobrenome;
+  document.getElementById('apRG').value=rg;
+  document.getElementById('apEmail').value='';
+  document.getElementById('apSenhaTemp').value='';
+  document.getElementById('apSenhaMostrada').style.display='none';
+  document.getElementById('modalAprovar').classList.add('active');
+}
+
+async function aprovarCadastro(ev){
+  ev.preventDefault();
+  const id=document.getElementById('apCadId').value;
+  const email=document.getElementById('apEmail').value.trim().toLowerCase();
+  const senhaTemp=document.getElementById('apSenhaTemp').value.trim();
+  const btn=ev.target.querySelector('button[type="submit"]');
+  if(!email){mostrarErro('Informe o e-mail.');return}
+  btn.disabled=true;
+  try{
+    const res=await fetch(API+'?op=aprovar-cadastro',{
+      method:'POST',headers:headers(),
+      body:JSON.stringify({id,email,senhaTemporaria:senhaTemp})
+    });
+    const j=await res.json();
+    if(!res.ok){mostrarErro(j.message||'Erro ao aprovar.');btn.disabled=false;return}
+    fecharModal('modalAprovar');
+    document.getElementById('apSenhaValor').textContent=j.senhaTemporaria;
+    document.getElementById('apSenhaMostrada').style.display='block';
+    mostrarSucesso('Acesso gerado. E-mail: '+j.funcionario.email+' | Senha temporária exibida acima.');
+    setTimeout(()=>{document.getElementById('apSenhaMostrada').style.display='none';},8000);
+    carregarPendentes();
+    carregarFuncionarios();
+  }catch(e){mostrarErro('Erro inesperado.');}finally{btn.disabled=false;}
+}
+
+// --- Redefinir senha ---
+function abrirRedefinir(id,nome){
+  document.getElementById('redefId').value=id;
+  document.getElementById('redefNome').value=nome;
+  document.getElementById('redefSenha').value='';
+  document.getElementById('modalRedefinir').classList.add('active');
+}
+
+async function redefinirSenha(ev){
+  ev.preventDefault();
+  const id=document.getElementById('redefId').value;
+  const senha=document.getElementById('redefSenha').value;
+  const btn=ev.target.querySelector('button[type="submit"]');
+  if(!senha||senha.length<6){mostrarErro('Senha mínima 6 caracteres.');return}
+  btn.disabled=true;
+  try{
+    const res=await fetch(API+'?op=redefinir-senha',{
+      method:'POST',headers:headers(),
+      body:JSON.stringify({id,novaSenha:senha})
+    });
+    const j=await res.json();
+    if(!res.ok){mostrarErro(j.message||'Erro ao redefinir.');btn.disabled=false;return}
+    fecharModal('modalRedefinir');
+    mostrarSucesso('Senha redefinida. Senha provisória: '+j.senha);
+    carregarFuncionarios();
+  }catch(e){mostrarErro('Erro inesperado.');}finally{btn.disabled=false;}
+}
+
+// --- Responder SAC ---
+function abrirResponderSac(id,assunto,nome,descricao){
+  document.getElementById('sacId').value=id;
+  document.getElementById('sacAssunto').value=assunto;
+  document.getElementById('sacNome').value=nome;
+  document.getElementById('sacDescricao').value=descricao;
+  document.getElementById('sacResposta').value='';
+  document.getElementById('modalResponderSac').classList.add('active');
+}
+
+async function responderSac(ev){
+  ev.preventDefault();
+  const id=document.getElementById('sacId').value;
+  const resposta=document.getElementById('sacResposta').value.trim();
+  const btn=ev.target.querySelector('button[type="submit"]');
+  if(!resposta){mostrarErro('Informe a resposta.');return}
+  btn.disabled=true;
+  try{
+    const res=await fetch(API+'?op=sac-responder',{
+      method:'POST',headers:headers(),
+      body:JSON.stringify({id,resposta})
+    });
+    if(!res.ok){const j=await res.json();mostrarErro(j.message||'Erro ao responder.');btn.disabled=false;return}
+    fecharModal('modalResponderSac');
+    mostrarSucesso('Resposta enviada.');
+    carregarSacs();
+  }catch(e){mostrarErro('Erro inesperado.');}finally{btn.disabled=false;}
+}
+
+// --- Permissões ---
+const AREAS = [
+  {key:'qualidade',label:'Qualidade'},
+  {key:'contencoes',label:'Contencões Internas'},
+  {key:'ocorrencias',label:'Ocorrências (SAC)'},
+  {key:'funcionarios',label:'Funcionários'},
+  {key:'seguranca',label:'Segurança do Trabalho'},
+  {key:'indicadores',label:'Indicadores'},
+  {key:'logs',label:'Logs de auditoria'},
+  {key:'config',label:'Configurações'},
+];
+
+function abrirPermissoes(id,nome){
+  document.getElementById('permId').value=id;
+  document.getElementById('permNome').value=nome;
+  const container=document.getElementById('permAreas');
+  container.innerHTML=AREAS.map(a=>`
+    <div class="checkbox-row">
+      <input type="checkbox" id="perm_${a.key}" value="${a.key}">
+      <label for="perm_${a.key}">${a.label}</label>
+    </div>
+  `).join('');
+  // Carrega permissões atuais
+  fetch(API+'?op=permissoes&acao=listar',{headers:headers()})
+    .then(r=>r.json())
+    .then(j=>{
+      const p=(j.permissoes||[]).find(x=>String(x.usuarioId)===id);
+      if(p&&p.areas){
+        Object.keys(p.areas).forEach(k=>{
+          const cb=document.getElementById('perm_'+k);
+          if(cb)cb.checked=!!p.areas[k];
+        });
+      }
+    });
+  document.getElementById('modalPermissoes').classList.add('active');
+}
+
+async function salvarPermissoes(ev){
+  ev.preventDefault();
+  const id=document.getElementById('permId').value;
+  const areas={};
+  AREAS.forEach(a=>{
+    const cb=document.getElementById('perm_'+a.key);
+    if(cb)areas[a.key]=cb.checked;
+  });
+  const btn=ev.target.querySelector('button[type="submit"]');
+  btn.disabled=true;
+  try{
+    const res=await fetch(API+'?op=permissoes&acao=definir',{
+      method:'POST',headers:headers(),
+      body:JSON.stringify({usuarioId:id,areas})
+    });
+    if(!res.ok){const j=await res.json();mostrarErro(j.message||'Erro ao salvar.');btn.disabled=false;return}
+    fecharModal('modalPermissoes');
+    mostrarSucesso('Permissões salvas.');
+    carregarPermissoes();
+  }catch(e){mostrarErro('Erro inesperado.');}finally{btn.disabled=false;}
+}
+
+// --- Util ---
+function fecharModal(id){
+  document.getElementById(id).classList.remove('active');
+}
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)fecharModal(m.id)});
+});
+
+async function logout(){
+  localStorage.removeItem('qual_token');
+  location.href='login-qualidade.html';
+  return false;
+}
+
+carregarDados();
+</script>
+</body>
+</html>

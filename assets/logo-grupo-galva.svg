@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <!-- Símbolo azul abstrato -->
+  <g transform="translate(10, 15)">
+    <path d="M45 0 L90 25 L90 75 L45 100 L0 75 L0 25 Z" fill="none" stroke="#1a56db" stroke-width="4"/>
+    <path d="M45 10 L80 30 L80 70 L45 90 L10 70 L10 30 Z" fill="none" stroke="#1a56db" stroke-width="2"/>
+    <path d="M45 25 L65 35 L65 65 L45 75 L25 65 L25 35 Z" fill="#1a56db"/>
+    <line x1="45" y1="0" x2="45" y2="100" stroke="#1a56db" stroke-width="2"/>
+    <line x1="0" y1="50" x2="90" y2="50" stroke="#1a56db" stroke-width="2"/>
+  </g>
+  <!-- Texto GRUPO -->
+  <text x="120" y="35" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#555555" letter-spacing="4">GRUPO</text>
+  <!-- Texto GALVA -->
+  <text x="120" y="80" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="#1a1a2e" letter-spacing="2">GALVA</text>
+  <!-- Tagline -->
+  <text x="120" y="100" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#888888" letter-spacing="3">GALVANIZAÇÃO A FOGO</text>
+</svg>

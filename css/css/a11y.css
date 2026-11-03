@@ -1,0 +1,130 @@
+/* =============================================================================
+   ACESSIBILIDADE (WCAG 2.1 - Nivel AA)
+   -----------------------------------------------------------------------------
+   - .skip-link        : permite pular o menu com o teclado
+   - .sr-only          : texto para leitores de tela (visualmente escondido)
+   - :focus-visible    : anel de foco visivel em TODOS os controles
+   - alvos de toque    : minimo 44x44 px (WCAG 2.5.8)
+   - prefers-reduced-motion / forced-colors : respeita a preferencia do usuario
+   ========================================================================== */
+
+/* --- Texto apenas para leitores de tela --- */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Link de salto --- */
+.skip-link {
+  position: absolute;
+  top: -100px; left: 8px;
+  z-index: 9999;
+  padding: 12px 18px;
+  background: var(--ac);
+  color: var(--on-ac);
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 0 0 var(--rs) var(--rs);
+  text-decoration: none;
+  transition: top var(--tr);
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 0;
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* --- Anel de foco visivel (global) --- */
+:where(a, button, input, select, textarea, [tabindex], [role="button"], [role="tab"], [role="dialog"], [role="alert"]):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Nunca some o anel: remove-se o outline, adiciona-se a sombra */
+:where(a, button, input, select, textarea, [tabindex], [role="button"], [role="tab"]):focus:not(:focus-visible) {
+  outline: none;
+}
+/* Elementos com role=button/tab que recebem foco programatico */
+[role="button"]:focus, [role="tab"]:focus {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* --- Item de menu e abas: estado de foco e item ativo --- */
+.ni:focus-visible, .tab:focus-visible, .seg-tab:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+.ni[aria-current="page"] {
+  position: relative;
+}
+.ni[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 20%;
+  width: 3px; height: 60%;
+  background: var(--ac);
+  border-radius: 0 3px 3px 0;
+}
+
+/* --- Alvos de toque (WCAG 2.5.8 - minimo 44px) --- */
+@media (pointer: coarse) {
+  .ni,
+  .tab,
+  .seg-tab,
+  .btn,
+  .btn-sm,
+  .hb2,
+  .modal-x,
+  .ni .nb {
+    min-height: var(--tap);
+  }
+  .ni, .tab, .seg-tab { min-width: var(--tap); }
+  .btn-sm { padding: 10px 14px !important; }
+}
+
+/* --- Respeita a preferencia de movimento reduzido --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .sec.active { animation: none !important; }
+  .ai { animation: none !important; }
+}
+
+/* --- Respeita o modo de cores forçadas do sistema --- */
+@media (forced-colors: active) {
+  .card, .mo, .ml, .tw, .fi, .fg, .tab, .ni {
+    border: 1px solid CanvasText;
+  }
+  .btn, .tab, .ni, .sec.active {
+    forced-color-adjust: none;
+    color: ButtonText;
+    background: ButtonFace;
+  }
+  .btn-primary, .btn-p {
+    background: Highlight;
+    color: HighlightText;
+  }
+  :where(a, button, input, select, textarea, [tabindex], [role="button"], [role="tab"]):focus-visible {
+    outline: 3px solid Highlight;
+  }
+}
+
+/* --- Telas de leitura de tela: texto do item de menu --- */
+.ni svg, .tab svg, .seg-tab svg { flex-shrink: 0; }
+
+/* --- Aumenta a nitidez do texto muito pequeno --- */
+.cs, .notif-time, .sidebar-footer .ur { text-underline-offset: 2px; }

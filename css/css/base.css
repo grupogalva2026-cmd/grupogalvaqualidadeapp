@@ -1,0 +1,48 @@
+/* ===== Base Reset & Typography ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 14px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-page);
+  color: var(--t1);
+  overflow: hidden;
+  height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Barra de rolagem VISIVEL: antes tinha 6px e o trilho transparente - em
+   telas pequenas parecia que a pagina nao tinha rolagem. */
+/* Barras quase invisiveis: o conteudo SEMPRE roda (mouse, teclado e toque),
+   mas a barra sumiu do campo visual. Trilho 100% transparente e thumb
+   translucida - discreta no escuro, sem quebrar nenhum painel. */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .12); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .25); }
+* { scrollbar-color: rgba(255, 255, 255, .14) transparent; scrollbar-width: thin; }
+
+/* Utility classes */
+.sec { display: none; }
+.sec.active { display: block; animation: fadeIn .3s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Grid system */
+.grid { display: grid; gap: 20px; }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g2 { grid-template-columns: repeat(2, 1fr); }
+
+/* Animation entrance */
+.ai { animation: slideUp .5s cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+.d1 { animation-delay: .05s; }
+.d2 { animation-delay: .1s; }
+.d3 { animation-delay: .15s; }
+.d4 { animation-delay: .2s; }

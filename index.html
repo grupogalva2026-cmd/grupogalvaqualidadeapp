@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galvabras · Qualidade - App Desktop</title>
+<link rel="icon" href="assets/logogrupo-transparente.png" type="image/png">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#0f172a;font-family:'DM Sans',sans-serif}
+  .app-bar{position:fixed;top:0;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#1e293b;color:#fff;font-size:13px;z-index:1000;border-bottom:1px solid #334155}
+  .app-bar .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
+  .app-bar .brand img{width:26px;height:26px}
+  .app-bar .status{display:flex;align-items:center;gap:10px;font-size:12px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .dot.online{background:#22c55e;box-shadow:0 0 8px #22c55e}
+  .dot.offline{background:#ef4444;box-shadow:0 0 8px #ef4444}
+  .dot.syncing{background:#eab308;box-shadow:0 0 8px #eab308;animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  #view{padding-top:52px;width:100%;height:calc(100vh - 52px);background:#fff}
+  iframe#appFrame{width:100%;height:100%;border:none;display:block}
+  #loader{position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+  #loader.hidden{display:none!important}
+  #loader .logo-loader{width:180px;height:auto;margin-bottom:10px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+  #loader .splash-brand{font-size:14px;font-weight:700;letter-spacing:.2em;color:#94a3b8;margin-bottom:8px}
+  #loader .splash-title{font-size:18px;font-weight:600;color:#e2e8f0;margin-bottom:24px}
+  .splash-progress{width:min(360px,80vw)}
+  .splash-progress-head{display:flex;justify-content:space-between;font-size:13px;color:#94a3b8;margin-bottom:8px}
+  .splash-progress-head b{color:#60a5fa}
+  .splash-bar{height:10px;background:#1e293b;border-radius:999px;overflow:hidden;border:1px solid #334155}
+  .splash-fill{height:100%;width:0;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:999px;transition:width .3s ease}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="app-bar">
+  <div class="brand">
+    <img src="assets/logogrupo-transparente.png" alt="Grupo Galva">
+    <span>Galvabras · Qualidade</span>
+  </div>
+  <div class="status">
+    <span class="dot" id="statusDot" class="offline"></span>
+    <span id="statusText">Iniciando…</span>
+    <span id="apiText">API: verificando…</span>
+    <span id="appText">v1.1.0</span>
+  </div>
+</div>
+
+<div id="loader">
+  <img src="assets/logogrupo-transparente.png" alt="Grupo Galva" class="logo-loader">
+  <div class="splash-brand">GRUPO GALVA</div>
+  <div class="splash-title">Iniciando sistema Qualidade…</div>
+  <div class="splash-progress">
+    <div class="splash-progress-head"><span id="splashMsg">Carregando interface…</span><b id="splashPct">0%</b></div>
+    <div class="splash-bar"><div class="splash-fill" id="splashFill"></div></div>
+  </div>
+</div>
+
+<div id="view">
+  <iframe id="appFrame" src="login-qualidade.html" style="width:100%;height:100%;border:none;display:block"></iframe>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  console.log('[Shell] script shell iniciado');
+  const API_BASE = 'https://galvabras-gestao-ti.vercel.app';
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const apiText = document.getElementById('apiText');
+  const loader = document.getElementById('loader');
+  const frame = document.getElementById('appFrame');
+  const splashFill = document.getElementById('splashFill');
+  const splashPct = document.getElementById('splashPct');
+  const splashMsg = document.getElementById('splashMsg');
+
+  let splashPctVal = 0;
+  const splashTimer = setInterval(()=>{
+    if(splashPctVal < 90){
+      splashPctVal += splashPctVal < 30 ? 8 : 4;
+      if(splashPctVal > 90) splashPctVal = 90;
+      if(splashFill) splashFill.style.width = splashPctVal + '%';
+      if(splashPct) splashPct.textContent = splashPctVal + '%';
+      if(splashMsg) splashMsg.textContent = splashPctVal < 30 ? 'Carregando interface…' : (splashPctVal < 60 ? 'Verificando conexão…' : 'Preparando sistema…');
+    }
+  }, 200);
+
+  function splashFinish(msg){
+    clearInterval(splashTimer);
+    if(splashFill) splashFill.style.width = '100%';
+    if(splashPct) splashPct.textContent = '100%';
+    if(splashMsg) splashMsg.textContent = msg || 'Pronto!';
+  }
+
+  function setStatus(online, syncing){
+    if(syncing){
+      statusDot.className = 'dot syncing';
+      statusText.textContent = 'Sincronizando…';
+    } else if(online){
+      statusDot.className = 'dot online';
+      statusText.textContent = 'Online · Sincronizado';
+    } else {
+      statusDot.className = 'dot offline';
+      statusText.textContent = 'Offline · Trabalhando localmente';
+    }
+  }
+
+  setStatus(navigator.onLine, false);
+  window.addEventListener('online', ()=>setStatus(true,false));
+  window.addEventListener('offline', ()=>setStatus(false,false));
+
+  function hideLoader(){
+    splashFinish('Pronto!');
+    if(loader){loader.style.setProperty('display','none','important');}
+    console.log('[Shell] hideLoader executado');
+  }
+
+  async function checkApi(){
+    try{
+      const r = await fetch(API_BASE + '/api/health', {method:'GET', mode:'cors', headers:{'Cache-Control':'no-cache'}, signal: AbortSignal.timeout(8000)});
+      apiText.textContent = 'API: online';
+      setStatus(true, false);
+      console.log('[Shell] API health OK, status:', r.status);
+    } catch(e){
+      apiText.textContent = 'API: indisponível';
+      setStatus(false, false);
+      console.log('[Shell] API health FALHOU:', e && e.message);
+    }
+  }
+
+  checkApi();
+
+  // Timeout de seguranÁa: esconde o loader no mŠximo depois de 5 segundos
+  setTimeout(hideLoader, 5000);
+  console.log('[Shell] timeout de 5s agendado');
+
+  // Esconde o loader assim que o iframe terminar de carregar
+  frame.addEventListener('load', function(){
+    console.log('[Shell] iframe carregado:', frame.src);
+    hideLoader();
+    try{
+      const src = frame.src || '';
+      if(src.indexOf('login-cliente') !== -1){
+        frame.src = 'login-qualidade.html';
+      }
+    }catch(e){}
+  });
+
+  // VerificaÁ„o periÛdica da API
+  setInterval(checkApi, 60000);
+})();
+</script>
+</body>
+</html>
