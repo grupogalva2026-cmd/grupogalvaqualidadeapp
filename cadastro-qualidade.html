@@ -133,7 +133,7 @@ async function cadastrar(ev){
       body:JSON.stringify({nome,sobrenome,rg})
     });
     const j=await res.json();
-    if(!res.ok){mostrarErro(j.message||'Erro ao cadastrar.');return}
+    if(!res.ok){mostrarErro(j.error||j.message||'Erro ao cadastrar.');return}
     document.getElementById('formCadastro').style.display='none';
     mostrarSucesso('Cadastro enviado com sucesso! Aguarde a aprovação da T.I. Você receberá seu e-mail e senha temporária.');
   }catch(err){

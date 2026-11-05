@@ -3,53 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Galvabras · Login Funcionário</title>
+<title>Galvabras · Acesso Funcionário</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/logo_sistema.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body{font-family:Arial,sans-serif;background:#fff;color:#111;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-  .card{background:#fff;border-radius:20px;padding:40px 32px;width:min(400px,92vw);box-shadow:0 25px 50px rgba(0,0,0,.2)}
-  .logo{text-align:center;margin-bottom:14px}
-  .logo img{width:100px;height:auto}
-  h1{font-size:24px;color:#111;font-weight:700;margin:8px 0 4px;text-align:center}
-  .sub{font-size:14px;color:#666;text-align:center;margin-bottom:24px}
-  .field{margin-bottom:18px}
-  .field label{display:block;font-size:14px;font-weight:600;color:#333;margin-bottom:7px}
-  .field input{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:15px}
-  .btn{width:100%;padding:14px;border:none;border-radius:8px;background:#065f46;color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased}
+  body{font-family:'DM Sans',sans-serif;background:#f4f6f8;color:#111827;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:url('assets/imagem_editada.webp');background-size:cover;background-position:center;background-attachment:fixed}
+  .page{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;width:100%}
+  .page::before{content:'';position:fixed;inset:0;background:rgba(244,246,248,.84);z-index:-1}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:38px 34px;width:min(430px,94vw);box-shadow:0 24px 48px rgba(15,23,42,.10);text-align:center}
+  .logo{margin:0 auto 18px;width:210px}
+  .logo img{width:100%;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 16px rgba(15,23,42,.18))}
+  .logo-sub{display:block;font-size:11px;letter-spacing:.18em;color:#64748b;text-transform:uppercase;margin-top:10px;font-weight:600}
+  h1{font-size:19px;color:#111827;font-weight:700;margin:2px 0 4px;letter-spacing:-.2px}
+  .sub{font-size:13px;color:#6b7280;margin-bottom:22px;line-height:1.5}
+  .field{margin-bottom:15px;text-align:left}
+  .field label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+  .field input{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+  .field input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .field input::placeholder{color:#9ca3af}
+  .btn{width:100%;padding:13px 16px;border:none;border-radius:8px;background:#065f46;color:#fff;font-weight:700;font-size:15px;cursor:pointer;transition:background .2s}
   .btn:hover{background:#044d38}
-  .msg{margin-top:14px;padding:10px;border-radius:8px;font-size:13px;display:none}
-  .err{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+  .btn:disabled{opacity:.65;cursor:not-allowed}
+  .error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:8px;font-size:13px;display:none;margin-bottom:14px;text-align:left}
+  .success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:10px 12px;border-radius:8px;font-size:13px;display:none;margin-bottom:14px;text-align:left}
+  .alt{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+  .alt a{color:#2563eb;text-decoration:none;font-size:13px}
+  .alt a:hover{text-decoration:underline}
+  .footer{margin-top:22px;text-align:center;font-size:12px;color:#6b7280}
+  .footer b{color:#374151}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo"><img src="assets/logo_sistema.png" alt="Grupo Galva"></div>
-  <h1>Acesso · Funcionário</h1>
-  <p class="sub">Informe o código de login enviado pelo Departamento de T.I.</p>
-  <div id="msg" class="msg err"></div>
-  <form id="formLogin" onsubmit="return loginQualidade(event)">
-    <div class="field">
-      <label>Código de Login</label>
-      <input type="text" id="loginRG" placeholder="Código de login" required>
+<div class="page">
+  <div class="card">
+    <div class="logo">
+      <img src="assets/logo_sistema.png" alt="Grupo Galva">
+      <span class="logo-sub">Grupo Galva · Galvanização a Fogo</span>
     </div>
-    <div class="field">
-      <label>Senha</label>
-      <input type="password" id="loginSenha" placeholder="Digite sua senha" required>
+
+    <h1>Sistema de Qualidade</h1>
+    <p class="sub">Acesso do funcionário</p>
+
+    <div id="msg" class="error"></div>
+
+    <form id="formLogin" onsubmit="return loginQualidade(event)">
+      <div class="field">
+        <label for="loginRG">Código de acesso</label>
+        <input type="text" id="loginRG" placeholder="Informe seu código" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="loginSenha">Senha</label>
+        <input type="password" id="loginSenha" placeholder="Digite sua senha" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn" id="btnLogin">ENTRAR</button>
+    </form>
+
+    <div class="alt">
+      <a href="cadastro-qualidade.html">Primeiro acesso? Cadastre-se</a>
+      <a href="login-admin.html">Administrador</a>
     </div>
-    <button type="submit" class="btn" id="btnLogin">ENTRAR</button>
-  </form>
+
+    <div class="footer">© <span id="ano">2026</span> <b>Grupo Galva</b></div>
+  </div>
 </div>
+
 <script src="js/config.js"></script>
 <script>
+(function(){
+  try{
+    document.getElementById('ano').textContent=String(new Date().getFullYear());
+  }catch(e){}
+  var motivo='';
+  try{ motivo=new URLSearchParams(location.search).get('motivo')||''; }catch(e){}
+  if(motivo==='sessao'){
+    var el=document.getElementById('msg');
+    el.className='error';
+    el.textContent='Sua sessão expirou ou foi encerrada. Entre novamente.';
+    el.style.display='block';
+  }
+  var t=localStorage.getItem('qual_token');
+  if(t){
+    fetch('/api/qualidade?op=session',{headers:{'Authorization':'Bearer '+t}})
+      .then(function(r){
+        if(r.ok){ window.location.href='admin-qualidade.html'; }
+        else { try{localStorage.removeItem('qual_token');localStorage.removeItem('qual_user')}catch(e){} }
+      })
+      .catch(function(){});
+  }
+})();
+
+function mostrar(texto,tipo){
+  var el=document.getElementById('msg');
+  el.textContent=texto;
+  el.className=(tipo==='ok')?'success':'error';
+  el.style.display='block';
+}
+
 async function loginQualidade(ev){
   ev.preventDefault();
   var btn=document.getElementById('btnLogin');
   var rg=document.getElementById('loginRG').value.trim();
   var senha=document.getElementById('loginSenha').value;
-  var msg=document.getElementById('msg');
-  if(!rg||!senha){msg.className='msg err';msg.textContent='Informe código e senha.';msg.style.display='block';return false;}
+  if(!rg||!senha){ mostrar('Informe código de acesso e senha.','erro'); return false; }
+
   btn.disabled=true;
-  msg.style.display='none';
+  btn.textContent='Entrando…';
+  document.getElementById('msg').style.display='none';
+
   try{
     var res=await fetch('/api/qualidade?op=login',{
       method:'POST',
@@ -57,12 +120,17 @@ async function loginQualidade(ev){
       body:JSON.stringify({rg:rg,senha:senha})
     });
     var j=await res.json();
-    if(!res.ok){msg.className='msg err';msg.textContent=j.message||'Código ou senha incorretos.';msg.style.display='block';btn.disabled=false;return false;}
-    if(j.token)localStorage.setItem('qual_token',j.token);
+    if(!res.ok||!j.token){
+      mostrar(j.error||j.message||'Código de acesso ou senha incorretos.','erro');
+      btn.disabled=false; btn.textContent='ENTRAR';
+      return false;
+    }
+    localStorage.setItem('qual_token',j.token);
     localStorage.setItem('qual_user',JSON.stringify(j.usuario));
     window.location.href='admin-qualidade.html';
   }catch(err){
-    msg.className='msg err';msg.textContent='Erro de conexão com o servidor.';msg.style.display='block';btn.disabled=false;
+    mostrar('Sem conexão com o servidor. Verifique a internet e tente novamente.','erro');
+    btn.disabled=false; btn.textContent='ENTRAR';
   }
   return false;
 }

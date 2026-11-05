@@ -5,29 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Galvabras · Admin Qualidade</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="logogrupo.jpeg" type="image/svg+xml">
+<link rel="icon" href="assets/logo_sistema.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-font-smoothing:antialiased}
-  body{font-family:'DM Sans',sans-serif;background:#f4f6f8;color:#111827;-webkit-font-smoothing:antialiased}
-  .topbar{background:#1e293b;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155}
-  .topbar .brand{font-weight:700;font-size:18px;display:flex;align-items:center;gap:10px}
-  .topbar .brand img{width:32px;height:auto}
-  .topbar .user{font-size:13px;opacity:.9}
-  .topbar .logout{background:#334155;border:1px solid #475569;color:#fff;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;text-decoration:none}
-  .topbar .logout:hover{background:#475569}
-  .container{max-width:1200px;margin:0 auto;padding:24px}
-  h2{font-size:20px;color:#111827;margin-bottom:8px}
-  .sub{font-size:14px;color:#6b7280;margin-bottom:24px}
-  .tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid #e2e8f0}
-  .tab{padding:10px 16px;background:#fff;border:1px solid #e2e8f0;border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;font-size:14px;color:#64748b;font-weight:600}
-  .tab.active{border-color:#2563eb;color:#2563eb;border-bottom:2px solid #2563eb}
+  body{font-family:'DM Sans',sans-serif;background:#f4f6f8;color:#111827}
+  .topbar{background:#1e293b;color:#fff;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;position:sticky;top:0;z-index:50}
+  .brand{display:flex;align-items:center;gap:14px;min-width:0}
+  .brand img{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:10px;padding:4px;box-shadow:0 4px 10px rgba(0,0,0,.25)}
+  .brand .txt{display:flex;flex-direction:column;line-height:1.25}
+  .brand .nome{font-weight:700;font-size:17px;letter-spacing:-.2px}
+  .brand .sub{font-size:11px;opacity:.75;letter-spacing:.1em;text-transform:uppercase}
+  .top-right{display:flex;align-items:center;gap:14px}
+  .sync{display:flex;align-items:center;gap:7px;font-size:12px;background:#0f172a;border:1px solid #334155;padding:6px 11px;border-radius:999px;white-space:nowrap}
+  .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e}
+  .dot.off{background:#ef4444;box-shadow:0 0 8px #ef4444}
+  .dot.sync{background:#eab308;box-shadow:0 0 8px #eab308;animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .user{font-size:13px;opacity:.9;white-space:nowrap}
+  .logout{background:#334155;border:1px solid #475569;color:#fff;padding:7px 15px;border-radius:7px;font-size:13px;cursor:pointer;text-decoration:none;font-family:inherit}
+  .logout:hover{background:#475569}
+  .container{max-width:1240px;margin:0 auto;padding:24px}
+  .sub{font-size:14px;color:#6b7280;margin-bottom:20px}
+  .tabs{display:flex;gap:8px;margin-bottom:22px;border-bottom:1px solid #e2e8f0}
+  .tab{padding:11px 20px;background:#fff;border:1px solid #e2e8f0;border-bottom:none;border-radius:9px 9px 0 0;cursor:pointer;font-size:14px;color:#64748b;font-weight:600;font-family:inherit;transition:.15s}
+  .tab:hover{color:#2563eb}
+  .tab.active{border-color:#2563eb;color:#2563eb;border-bottom:2px solid #2563eb;background:#eff6ff}
   .tab-content{display:none}
   .tab-content.active{display:block}
-  .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 4px 6px rgba(15,23,42,.04)}
-  .card h3{font-size:15px;margin-bottom:16px;color:#111827;display:flex;align-items:center;gap:8px}
-  .btn{padding:8px 14px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 4px 6px rgba(15,23,42,.04)}
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+  .card h3{font-size:15px;color:#111827}
+  .btn{padding:9px 15px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
   .btn-primary{background:#2563eb;color:#fff}
   .btn-primary:hover{background:#1d4ed8}
   .btn-success{background:#15803d;color:#fff}
@@ -36,50 +46,65 @@
   .btn-danger:hover{background:#b91c1c}
   .btn-outline{background:#fff;border:1px solid #d1d5db;color:#374151}
   .btn-outline:hover{border-color:#2563eb;color:#2563eb}
-  .btn-sm{padding:6px 12px;font-size:12px}
+  .btn-sm{padding:6px 11px;font-size:12px}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th{text-align:left;padding:12px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600}
-  td{padding:12px;border-bottom:1px solid #f1f5f9}
+  th{text-align:left;padding:11px 12px;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:600;white-space:nowrap}
+  td{padding:11px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
   tr:hover{background:#fafafa}
-  .badge{display:inline-block;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:700}
-  .badge-pendente{background:#fef3c7;color:#92400e}
-  .badge-aprovado{background:#d1fae5;color:#065f46}
-  .badge-aberto{background:#bfdbfe;color:#1e3a8a}
-  .badge-respondido{background:#d1fae5;color:#065f46}
-  .badge-master{background:#e0e7ff;color:#3730a3}
-  .badge-funcionario{background:#f1f5f9;color:#475569}
-  .empty{text-align:center;padding:40px;color:#6b7280}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:768px){.form-row{grid-template-columns:1fr}}
+  .badge{display:inline-block;padding:4px 9px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap}
+  .b-aprovado{background:#d1fae5;color:#065f46}
+  .b-pendente{background:#fef3c7;color:#92400e}
+  .b-master{background:#e0e7ff;color:#3730a3}
+  .b-func{background:#f1f5f9;color:#475569}
+  .empty{text-align:center;padding:44px;color:#6b7280;font-size:14px}
+  .error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:11px 13px;border-radius:8px;font-size:13px;display:none;margin-bottom:16px}
+  .success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:11px 13px;border-radius:8px;font-size:13px;display:none;margin-bottom:16px}
+  .user-chip{display:flex;align-items:center;gap:9px}
+  .avatar{width:32px;height:32px;background:#e0e7ff;color:#3730a3;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex:0 0 auto}
+  .actions-cell{display:flex;gap:7px;flex-wrap:wrap}
   .field{margin-bottom:14px}
   .field label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
-  .field input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:14px}
-  .field input:focus{border-color:#2563eb;outline:none}
-  .actions{display:flex;gap:8px;margin-top:16px}
-  .error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:8px;font-size:13px;display:none;margin-bottom:16px}
-  .success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:10px 12px;border-radius:8px;font-size:13px;display:none;margin-bottom:16px}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(37,99,235,.3);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:100;align-items:center;justify-content:center}
+  .field input,.field select{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:7px;background:#fff;font-size:14px;font-family:inherit;color:#111827}
+  .field input:focus,.field select:focus{border-color:#2563eb;outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .field .hint{font-size:12px;color:#6b7280;margin-top:4px;display:block}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .actions{display:flex;gap:9px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap}
+  .modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100;align-items:center;justify-content:center;padding:20px}
   .modal.active{display:flex}
-  .modal-box{background:#fff;border-radius:12px;padding:24px;width:min(500px,92vw);max-height:90vh;overflow-y:auto}
-  .modal-box h3{font-size:16px;margin-bottom:16px}
-  .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
-  .checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .checkbox-row input{width:16px;height:16px}
-  .user-chip{display:flex;align-items:center;gap:8px}
-  .avatar{width:32px;height:32px;background:#e0e7ff;color:#3730a3;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  .modal-box{background:#fff;border-radius:14px;padding:24px;width:min(560px,96vw);max-height:92vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.3)}
+  .modal-box h3{font-size:16px;margin-bottom:18px}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+  .stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px}
+  .stat .k{font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em}
+  .stat .v{font-size:26px;font-weight:700;color:#111827;margin-top:6px}
+  @media(max-width:768px){
+    .form-row{grid-template-columns:1fr}
+    .topbar{flex-wrap:wrap;gap:10px}
+    table{font-size:12px}
+    .brand img{width:44px;height:44px}
+  }
+  @media print{
+    .topbar,.tabs,.btn,.actions-cell,.no-print{display:none!important}
+    body{background:#fff}
+    .card{box-shadow:none;border-color:#ccc}
+    .tab-content{display:block!important}
+  }
 </style>
 </head>
 <body>
 <div class="topbar">
   <div class="brand">
-    <img src="logogrupo.jpeg" alt="Grupo Galva">
-    <span>Admin · Qualidade</span>
+    <img src="assets/logo_sistema.png" alt="Grupo Galva">
+    <div class="txt">
+      <span class="nome">Grupo Galva · Qualidade</span>
+      <span class="sub">Painel administrativo</span>
+    </div>
   </div>
-  <div style="display:flex;align-items:center;gap:16px">
-    <span class="user" id="userInfo">Carregando…</span>
-    <a href="#" class="logout" onclick="return logout()">Sair</a>
+  <div class="top-right">
+    <span class="sync" id="syncBox"><span class="dot" id="syncDot"></span><span id="syncText">Sincronizando…</span></span>
+    <span class="user" id="userInfo">…</span>
+    <a href="#" class="logout" onclick="return sair()">Sair</a>
   </div>
 </div>
 
@@ -88,152 +113,98 @@
   <div id="appSucesso" class="success"></div>
 
   <div class="tabs">
-    <div class="tab active" onclick="abrirAba('pendentes')">Cadastros Pendentes</div>
-    <div class="tab" onclick="abrirAba('funcionarios')">Funcionários</div>
-    <div class="tab" onclick="abrirAba('sacs')">SACs (Atendimento)</div>
-    <div class="tab" onclick="abrirAba('permissoes')">Permissões</div>
+    <button class="tab active" data-aba="funcionarios">Funcionários</button>
+    <button class="tab" data-aba="relatorios">Relatórios</button>
   </div>
 
-  <!-- Pendentes -->
-  <div class="tab-content active" id="aba-pendentes">
+  <div class="tab-content active" id="aba-funcionarios">
     <div class="card">
-      <h3>📋 Cadastros aguardando aprovação</h3>
-      <div id="pendentesLista" class="empty">Carregando…</div>
-    </div>
-  </div>
-
-  <!-- Funcionários -->
-  <div class="tab-content" id="aba-funcionarios">
-    <div class="card">
-      <h3>👥 Funcionários cadastrados</h3>
+      <div class="card-head">
+        <h3>Funcionários cadastrados <span id="totalFunc" style="color:#6b7280;font-weight:400"></span></h3>
+        <div class="no-print" style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="carregar(true)">Atualizar</button>
+          <button class="btn btn-primary btn-sm" onclick="editar(null)">+ Novo funcionário</button>
+        </div>
+      </div>
       <div id="funcionariosLista" class="empty">Carregando…</div>
     </div>
   </div>
 
-  <!-- SACs -->
-  <div class="tab-content" id="aba-sacs">
+  <div class="tab-content" id="aba-relatorios">
+    <div class="stats">
+      <div class="stat"><div class="k">Total de usuários</div><div class="v" id="stTotal">—</div></div>
+      <div class="stat"><div class="k">Ativos (30 dias)</div><div class="v" id="stAtivos">—</div></div>
+      <div class="stat"><div class="k">Masters</div><div class="v" id="stMasters">—</div></div>
+      <div class="stat"><div class="k">Pendentes</div><div class="v" id="stPendentes">—</div></div>
+    </div>
     <div class="card">
-      <h3>📞 Chamados SAC</h3>
-      <div id="sacsLista" class="empty">Carregando…</div>
-    </div>
-  </div>
-
-  <!-- Permissões -->
-  <div class="tab-content" id="aba-permissoes">
-    <div class="card">
-      <h3>🔐 Permissões por área</h3>
-      <p class="sub">Bloqueie ou libere áreas do sistema para cada funcionário.</p>
-      <div id="permissoesLista" class="empty">Carregando…</div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal aprovar -->
-<div class="modal" id="modalAprovar">
-  <div class="modal-box">
-    <h3>✅ Aprovar cadastro</h3>
-    <form id="formAprovar" onsubmit="return aprovarCadastro(event)">
-      <input type="hidden" id="apCadId">
-      <div class="field">
-        <label>Nome</label>
-        <input type="text" id="apNome" readonly>
+      <div class="card-head">
+        <h3>Relatório de usuários</h3>
+        <div class="no-print" style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="exportarCSV()">Exportar CSV</button>
+          <button class="btn btn-outline btn-sm" onclick="window.print()">Imprimir</button>
+          <button class="btn btn-outline btn-sm" onclick="carregar(true)">Atualizar</button>
+        </div>
       </div>
-      <div class="field">
-        <label>RG</label>
-        <input type="text" id="apRG" readonly>
-      </div>
-      <div class="field">
-        <label>E-mail de login</label>
-        <input type="email" id="apEmail" placeholder="nome@empresa.com" required>
-      </div>
-      <div class="field">
-        <label>Senha temporária</label>
-        <input type="password" id="apSenhaTemp" placeholder="Deixe em branco para gerar automaticamente">
-        <span style="font-size:12px;color:#6b7280">Exibida apenas uma vez ao salvar.</span>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="fecharModal('modalAprovar')">Cancelar</button>
-        <button type="submit" class="btn btn-success">Gerar acesso</button>
-      </div>
-    </form>
-    <div id="apSenhaMostrada" style="margin-top:16px;padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;display:none">
-      <strong>Senha temporária:</strong> <span id="apSenhaValor" style="font-family:monospace;font-weight:700"></span><br>
-      <small style="color:#166534">Entregue esta senha ao funcionário. Não será exibida novamente.</small>
+      <div id="relatorioLista" class="empty">Carregando…</div>
     </div>
   </div>
 </div>
 
-<!-- Modal redefinir senha -->
-<div class="modal" id="modalRedefinir">
+<div class="modal" id="modalFunc">
   <div class="modal-box">
-    <h3>🔑 Redefinir senha</h3>
-    <form id="formRedefinir" onsubmit="return redefinirSenha(event)">
-      <input type="hidden" id="redefId">
-      <div class="field">
-        <label>Funcionário</label>
-        <input type="text" id="redefNome" readonly>
+    <h3 id="mfTitulo">Funcionário</h3>
+    <div id="mfErro" class="error"></div>
+    <form id="formFunc" onsubmit="return salvar(event)">
+      <input type="hidden" id="fId">
+      <div class="form-row">
+        <div class="field"><label for="fNome">Nome *</label><input type="text" id="fNome" required></div>
+        <div class="field"><label for="fSobrenome">Sobrenome</label><input type="text" id="fSobrenome"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label for="fRG">RG / Código *</label><input type="text" id="fRG" required></div>
+        <div class="field"><label for="fEmail">E-mail</label><input type="email" id="fEmail"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label for="fCargo">Cargo</label><input type="text" id="fCargo"></div>
+        <div class="field"><label for="fSetor">Setor</label><input type="text" id="fSetor"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label for="fPerfil">Perfil</label>
+          <select id="fPerfil">
+            <option value="funcionario">Funcionário</option>
+            <option value="admin">Administrador</option>
+            <option value="master">Master</option>
+          </select>
+        </div>
+        <div class="field"><label for="fStatus">Status</label>
+          <select id="fStatus">
+            <option value="approved">Aprovado</option>
+            <option value="pending">Pendente (bloqueado)</option>
+          </select>
+        </div>
       </div>
       <div class="field">
-        <label>Nova senha</label>
-        <input type="password" id="redefSenha" placeholder="Mínimo 6 caracteres" required>
+        <label for="fSenha">Senha</label>
+        <input type="text" id="fSenha" placeholder="Deixe em branco para manter a atual">
+        <span class="hint">Preencha apenas para definir ou redefinir a senha.</span>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="fecharModal('modalRedefinir')">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Redefinir</button>
+        <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Modal responder SAC -->
-<div class="modal" id="modalResponderSac">
-  <div class="modal-box">
-    <h3>💬 Responder SAC</h3>
-    <form id="formResponderSac" onsubmit="return responderSac(event)">
-      <input type="hidden" id="sacId">
-      <div class="field">
-        <label>Assunto</label>
-        <input type="text" id="sacAssunto" readonly>
-      </div>
-      <div class="field">
-        <label>Solicitante</label>
-        <input type="text" id="sacNome" readonly>
-      </div>
-      <div class="field">
-        <label>Descrição</label>
-        <textarea id="sacDescricao" readonly rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;background:#f8fafc"></textarea>
-      </div>
-      <div class="field">
-        <label>Sua resposta</label>
-        <textarea id="sacResposta" rows="4" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px" required></textarea>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="fecharModal('modalResponderSac')">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Enviar resposta</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal definir permissões -->
-<div class="modal" id="modalPermissoes">
-  <div class="modal-box">
-    <h3>🔐 Definir permissões</h3>
-    <form id="formPermissoes" onsubmit="return salvarPermissoes(event)">
-      <input type="hidden" id="permId">
-      <div class="field">
-        <label>Funcionário</label>
-        <input type="text" id="permNome" readonly>
-      </div>
-      <div style="max-height:300px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;padding:12px;background:#f8fafc">
-        <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:10px">Áreas do sistema:</label>
-        <div id="permAreas"></div>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="fecharModal('modalPermissoes')">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Salvar permissões</button>
-      </div>
-    </form>
+<div class="modal" id="modalExcluir">
+  <div class="modal-box" style="width:min(420px,96vw)">
+    <h3>Excluir funcionário</h3>
+    <p style="font-size:14px;color:#475569" id="exTexto"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+      <button type="button" class="btn btn-danger" onclick="confirmarExclusao()">Excluir</button>
+    </div>
   </div>
 </div>
 
@@ -241,318 +212,319 @@
 <script>
 const API='/api/qualidade';
 let token=localStorage.getItem('qual_token');
+let listaAtual=[];
+let relatorioAtual=null;
+let excluirId=null;
+let excluirNome='';
+let syncTimer=null;
+let primeiroCarregamento=true;
 
-function headers(extra={}){
-  const h={'Content-Type':'application/json','X-Galvabras-CSRF':'1',...extra};
-  if(token)h['Authorization']='Bearer '+token;
-  return h;
+function h(v){
+  return String(v===undefined||v===null?'':v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function headers(extra){
+  const base={'Content-Type':'application/json','X-Galvabras-CSRF':'1'};
+  if(token)base['Authorization']='Bearer '+token;
+  return Object.assign(base,extra||{});
 }
 
 function mostrarErro(msg){
   const el=document.getElementById('appErro');
-  if(el){el.textContent=msg;el.style.display='block';}
+  el.textContent=msg||''; el.style.display=msg?'block':'none';
 }
 function mostrarSucesso(msg){
   const el=document.getElementById('appSucesso');
-  if(el){el.textContent=msg;el.style.display='block';}
+  el.textContent=msg||''; el.style.display=msg?'block':'none';
+  if(msg)setTimeout(()=>{el.style.display='none'},5000);
 }
-function limparMensagens(){
-  document.getElementById('appErro').style.display='none';
-  document.getElementById('appSucesso').style.display='none';
+function limparMensagens(){ mostrarErro(''); mostrarSucesso(''); }
+
+function irParaLogin(motivo){
+  try{localStorage.removeItem('qual_token');localStorage.removeItem('qual_user')}catch(e){}
+  window.location.href='login-qualidade.html'+(motivo?('?motivo='+encodeURIComponent(motivo)):'');
 }
 
-async function carregarUsuario(){
+function setSync(estado){
+  const dot=document.getElementById('syncDot');
+  const txt=document.getElementById('syncText');
+  if(!dot||!txt)return;
+  dot.className='dot '+(estado==='ok'?'':estado==='off'?'off':'sync');
+  txt.textContent=estado==='ok'?'Online · Sincronizado':estado==='off'?'Offline':'Sincronizando…';
+}
+
+async function chamar(op,method,body){
+  const res=await fetch(API+'?op='+op,{
+    method:method||'GET',
+    headers:headers(),
+    body:body?JSON.stringify(body):undefined
+  });
+  if(res.status===401){ irParaLogin('sessao'); throw new Error('sessao'); }
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok){ const e=new Error(j.error||j.message||'Erro na requisição'); e.status=res.status; throw e; }
+  return j;
+}
+
+async function verificarSessao(){
   try{
-    const res=await fetch(API+'?op=session',{headers:headers()});
-    if(!res.ok){localStorage.removeItem('qual_token');location.href='login-qualidade.html';return}
-    const j=await res.json();
-    document.getElementById('userInfo').textContent=(j.usuario.nome||'')+' (master)';
-    return j.usuario;
-  }catch(e){location.href='login-qualidade.html'}
+    const j=await chamar('session','GET');
+    const nome=(j.usuario&&j.usuario.nome)||(JSON.parse(localStorage.getItem('qual_user')||'{}').nome)||'';
+    document.getElementById('userInfo').textContent=nome?nome:'usuário';
+    return true;
+  }catch(e){ return false; }
 }
 
-async function carregarDados(){
-  limparMensagens();
-  await carregarUsuario();
-  carregarPendentes();
-  carregarFuncionarios();
-  carregarSacs();
-  carregarPermissoes();
-}
-
-function abrirAba(nome){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  document.getElementById('aba-'+nome).classList.add('active');
-}
-
-async function carregarPendentes(){
-  const el=document.getElementById('pendentesLista');
-  try{
-    const res=await fetch(API+'?op=list-cadastros',{headers:headers()});
-    if(!res.ok){el.innerHTML='<div class="error">Erro ao carregar cadastros.</div>';return}
-    const j=await res.json();
-    const lista=j.cadastros||[];
-    if(!lista.length){el.innerHTML='<div class="empty">Nenhum cadastro pendente.</div>';return}
-    let html='<table><thead><tr><th>Nome</th><th>RG</th><th>Solicitado em</th><th>Ação</th></tr></thead><tbody>';
-    lista.forEach(c=>{
-      const data=new Date(c.createdAt||0).toLocaleString('pt-BR');
-      html+=`<tr>
-        <td>${c.nome} ${c.sobrenome||''}</td>
-        <td>${c.rg}</td>
-        <td>${data}</td>
-        <td><button class="btn btn-success btn-sm" onclick="abrirAprovar('${c.id}','${c.nome}','${c.sobrenome||''}','${c.rg}')">Aprovar</button></td>
-      </tr>`;
-    });
-    html+='</tbody></table>';
-    el.innerHTML=html;
-  }catch(e){el.innerHTML='<div class="error">Erro ao carregar.</div>';}
-}
-
-async function carregarFuncionarios(){
+async function carregar(forcar){
+  if(!forcar && document.hidden) return;
   const el=document.getElementById('funcionariosLista');
   try{
-    const res=await fetch(API+'?op=list-funcionarios',{headers:headers()});
-    if(!res.ok){el.innerHTML='<div class="error">Erro ao carregar funcionários.</div>';return}
-    const j=await res.json();
-    const lista=j.funcionarios||[];
-    if(!lista.length){el.innerHTML='<div class="empty">Nenhum funcionário cadastrado.</div>';return}
-    let html='<table><thead><tr><th>Nome</th><th>RG</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Primeiro login</th><th>Ação</th></tr></thead><tbody>';
-    lista.forEach(f=>{
-      const inicial=(f.nome.charAt(0)+(f.sobrenome?f.sobrenome.charAt(0):''));
-      html+=`<tr>
-        <td><div class="user-chip"><div class="avatar">${inicial.toUpperCase()}</div>${f.nome} ${f.sobrenome||''}</div></td>
-        <td>${f.rg}</td>
-        <td>${f.email}</td>
-        <td><span class="badge ${f.perfil==='master'?'badge-master':'badge-funcionario'}">${f.perfil||'funcionario'}</span></td>
-        <td><span class="badge badge-${f.status==='approved'?'aprovado':'pendente'}">${f.status}</span></td>
-        <td>${f.firstLogin?'Sim':'Não'}</td>
-        <td>
-          <button class="btn btn-outline btn-sm" onclick="abrirRedefinir('${f.id}','${f.nome} ${f.sobrenome||''}')">Redefinir senha</button>
-          <button class="btn btn-outline btn-sm" onclick="abrirPermissoes('${f.id}','${f.nome} ${f.sobrenome||''}')">Permissões</button>
-        </td>
-      </tr>`;
-    });
-    html+='</tbody></table>';
-    el.innerHTML=html;
-  }catch(e){el.innerHTML='<div class="error">Erro ao carregar.</div>';}
+    setSync('sync');
+    const j=await chamar('func-listar','GET');
+    listaAtual=j.funcionarios||[];
+    renderFuncionarios();
+    setSync(navigator.onLine?'ok':'off');
+    if(primeiroCarregamento){ primeiroCarregamento=false; }
+  }catch(e){
+    setSync('off');
+    if(e.message!=='sessao'){ el.innerHTML='<div class="empty">Não foi possível carregar. <button class="btn btn-outline btn-sm" onclick="carregar(true)">Tentar de novo</button></div>'; }
+  }
 }
 
-async function carregarSacs(){
-  const el=document.getElementById('sacsLista');
-  try{
-    const res=await fetch(API+'?op=sac-listar',{headers:headers()});
-    if(!res.ok){el.innerHTML='<div class="error">Erro ao carregar SACs.</div>';return}
-    const j=await res.json();
-    const lista=j.sacs||[];
-    if(!lista.length){el.innerHTML='<div class="empty">Nenhum chamado SAC.</div>';return}
-    let html='<table><thead><tr><th>Solicitante</th><th>Assunto</th><th>Status</th><th>Criado em</th><th>Ação</th></tr></thead><tbody>';
-    lista.forEach(s=>{
-      const data=new Date(s.criadoEm||0).toLocaleString('pt-BR');
-      html+=`<tr>
-        <td>${s.nome}</td>
-        <td>${s.assunto}</td>
-        <td><span class="badge badge-${s.status==='respondido'?'respondido':'aberto'}">${s.status}</span></td>
-        <td>${data}</td>
-        <td><button class="btn btn-outline btn-sm" onclick="abrirResponderSac('${s.id}','${s.assunto}','${s.nome}','${s.descricao||''}')">Responder</button></td>
-      </tr>`;
-    });
-    html+='</tbody></table>';
-    el.innerHTML=html;
-  }catch(e){el.innerHTML='<div class="error">Erro ao carregar.</div>';}
-}
-
-async function carregarPermissoes(){
-  const el=document.getElementById('permissoesLista');
-  try{
-    const res=await fetch(API+'?op=permissoes&acao=listar',{headers:headers()});
-    if(!res.ok){el.innerHTML='<div class="error">Erro ao carregar permissões.</div>';return}
-    const j=await res.json();
-    const lista=j.permissoes||[];
-    if(!lista.length){el.innerHTML='<div class="empty">Nenhuma permissão definida ainda. Todas as áreas estão bloqueadas por padrão.</div>';return}
-    let html='<table><thead><tr><th>Funcionário</th><th>Áreas liberadas</th><th>Ação</th></tr></thead><tbody>';
-    lista.forEach(p=>{
-      const areas=p.areas||{};
-      const ativas=Object.entries(areas).filter(([k,v])=>v).map(([k])=>k).join(', ')||'Nenhuma';
-      html+=`<tr>
-        <td>${p.usuarioNome||p.usuarioId}</td>
-        <td>${ativas}</td>
-        <td><button class="btn btn-outline btn-sm" onclick="abrirPermissoes('${p.usuarioId}','${p.usuarioNome||p.usuarioId}')">Editar</button></td>
-      </tr>`;
-    });
-    html+='</tbody></table>';
-    el.innerHTML=html;
-  }catch(e){el.innerHTML='<div class="error">Erro ao carregar.</div>';}
-}
-
-// --- Aprovar cadastro ---
-function abrirAprovar(id,nome,sobrenome,rg){
-  document.getElementById('apCadId').value=id;
-  document.getElementById('apNome').value=nome+' '+sobrenome;
-  document.getElementById('apRG').value=rg;
-  document.getElementById('apEmail').value='';
-  document.getElementById('apSenhaTemp').value='';
-  document.getElementById('apSenhaMostrada').style.display='none';
-  document.getElementById('modalAprovar').classList.add('active');
-}
-
-async function aprovarCadastro(ev){
-  ev.preventDefault();
-  const id=document.getElementById('apCadId').value;
-  const email=document.getElementById('apEmail').value.trim().toLowerCase();
-  const senhaTemp=document.getElementById('apSenhaTemp').value.trim();
-  const btn=ev.target.querySelector('button[type="submit"]');
-  if(!email){mostrarErro('Informe o e-mail.');return}
-  btn.disabled=true;
-  try{
-    const res=await fetch(API+'?op=aprovar-cadastro',{
-      method:'POST',headers:headers(),
-      body:JSON.stringify({id,email,senhaTemporaria:senhaTemp})
-    });
-    const j=await res.json();
-    if(!res.ok){mostrarErro(j.message||'Erro ao aprovar.');btn.disabled=false;return}
-    fecharModal('modalAprovar');
-    document.getElementById('apSenhaValor').textContent=j.senhaTemporaria;
-    document.getElementById('apSenhaMostrada').style.display='block';
-    mostrarSucesso('Acesso gerado. E-mail: '+j.funcionario.email+' | Senha temporária exibida acima.');
-    setTimeout(()=>{document.getElementById('apSenhaMostrada').style.display='none';},8000);
-    carregarPendentes();
-    carregarFuncionarios();
-  }catch(e){mostrarErro('Erro inesperado.');}finally{btn.disabled=false;}
-}
-
-// --- Redefinir senha ---
-function abrirRedefinir(id,nome){
-  document.getElementById('redefId').value=id;
-  document.getElementById('redefNome').value=nome;
-  document.getElementById('redefSenha').value='';
-  document.getElementById('modalRedefinir').classList.add('active');
-}
-
-async function redefinirSenha(ev){
-  ev.preventDefault();
-  const id=document.getElementById('redefId').value;
-  const senha=document.getElementById('redefSenha').value;
-  const btn=ev.target.querySelector('button[type="submit"]');
-  if(!senha||senha.length<6){mostrarErro('Senha mínima 6 caracteres.');return}
-  btn.disabled=true;
-  try{
-    const res=await fetch(API+'?op=redefinir-senha',{
-      method:'POST',headers:headers(),
-      body:JSON.stringify({id,novaSenha:senha})
-    });
-    const j=await res.json();
-    if(!res.ok){mostrarErro(j.message||'Erro ao redefinir.');btn.disabled=false;return}
-    fecharModal('modalRedefinir');
-    mostrarSucesso('Senha redefinida. Senha provisória: '+j.senha);
-    carregarFuncionarios();
-  }catch(e){mostrarErro('Erro inesperado.');}finally{btn.disabled=false;}
-}
-
-// --- Responder SAC ---
-function abrirResponderSac(id,assunto,nome,descricao){
-  document.getElementById('sacId').value=id;
-  document.getElementById('sacAssunto').value=assunto;
-  document.getElementById('sacNome').value=nome;
-  document.getElementById('sacDescricao').value=descricao;
-  document.getElementById('sacResposta').value='';
-  document.getElementById('modalResponderSac').classList.add('active');
-}
-
-async function responderSac(ev){
-  ev.preventDefault();
-  const id=document.getElementById('sacId').value;
-  const resposta=document.getElementById('sacResposta').value.trim();
-  const btn=ev.target.querySelector('button[type="submit"]');
-  if(!resposta){mostrarErro('Informe a resposta.');return}
-  btn.disabled=true;
-  try{
-    const res=await fetch(API+'?op=sac-responder',{
-      method:'POST',headers:headers(),
-      body:JSON.stringify({id,resposta})
-    });
-    if(!res.ok){const j=await res.json();mostrarErro(j.message||'Erro ao responder.');btn.disabled=false;return}
-    fecharModal('modalResponderSac');
-    mostrarSucesso('Resposta enviada.');
-    carregarSacs();
-  }catch(e){mostrarErro('Erro inesperado.');}finally{btn.disabled=false;}
-}
-
-// --- Permissões ---
-const AREAS = [
-  {key:'qualidade',label:'Qualidade'},
-  {key:'contencoes',label:'Contencões Internas'},
-  {key:'ocorrencias',label:'Ocorrências (SAC)'},
-  {key:'funcionarios',label:'Funcionários'},
-  {key:'seguranca',label:'Segurança do Trabalho'},
-  {key:'indicadores',label:'Indicadores'},
-  {key:'logs',label:'Logs de auditoria'},
-  {key:'config',label:'Configurações'},
-];
-
-function abrirPermissoes(id,nome){
-  document.getElementById('permId').value=id;
-  document.getElementById('permNome').value=nome;
-  const container=document.getElementById('permAreas');
-  container.innerHTML=AREAS.map(a=>`
-    <div class="checkbox-row">
-      <input type="checkbox" id="perm_${a.key}" value="${a.key}">
-      <label for="perm_${a.key}">${a.label}</label>
-    </div>
-  `).join('');
-  // Carrega permissões atuais
-  fetch(API+'?op=permissoes&acao=listar',{headers:headers()})
-    .then(r=>r.json())
-    .then(j=>{
-      const p=(j.permissoes||[]).find(x=>String(x.usuarioId)===id);
-      if(p&&p.areas){
-        Object.keys(p.areas).forEach(k=>{
-          const cb=document.getElementById('perm_'+k);
-          if(cb)cb.checked=!!p.areas[k];
-        });
-      }
-    });
-  document.getElementById('modalPermissoes').classList.add('active');
-}
-
-async function salvarPermissoes(ev){
-  ev.preventDefault();
-  const id=document.getElementById('permId').value;
-  const areas={};
-  AREAS.forEach(a=>{
-    const cb=document.getElementById('perm_'+a.key);
-    if(cb)areas[a.key]=cb.checked;
+function renderFuncionarios(){
+  const el=document.getElementById('funcionariosLista');
+  document.getElementById('totalFunc').textContent='('+listaAtual.length+')';
+  if(!listaAtual.length){
+    el.innerHTML='<div class="empty">Nenhum funcionário cadastrado ainda. Clique em <b>+ Novo funcionário</b>.</div>';
+    return;
+  }
+  let html='<div style="overflow-x:auto"><table><thead><tr>'+
+    '<th>Funcionário</th><th>RG</th><th>E-mail</th><th>Cargo</th><th>Setor</th>'+
+    '<th>Perfil</th><th>Status</th><th>Último acesso</th><th class="no-print">Ações</th>'+
+    '</tr></thead><tbody>';
+  listaAtual.forEach(f=>{
+    const ini=((f.nome||'?')[0]||'')+((f.sobrenome||'')[0]||'');
+    const perfil=(f.perfil||'funcionario');
+    const status=(f.status||'approved');
+    html+='<tr>'+
+      '<td><div class="user-chip"><div class="avatar">'+h(ini.toUpperCase())+'</div>'+h(f.nome)+' '+h(f.sobrenome)+'</div></td>'+
+      '<td>'+h(f.rg)+'</td>'+
+      '<td>'+h(f.email||'—')+'</td>'+
+      '<td>'+h(f.cargo||'—')+'</td>'+
+      '<td>'+h(f.setor||'—')+'</td>'+
+      '<td><span class="badge '+(perfil==='master'||perfil==='admin'?'b-master':'b-func')+'">'+h(perfil)+'</span></td>'+
+      '<td><span class="badge '+(status==='approved'?'b-aprovado':'b-pendente')+'">'+(status==='approved'?'Aprovado':'Pendente')+'</span></td>'+
+      '<td>'+h(formatarData(f.ultimoAcesso))+'</td>'+
+      '<td class="no-print"><div class="actions-cell">'+
+        '<button class="btn btn-outline btn-sm" data-acao="editar" data-id="'+h(f.id)+'">Editar</button>'+
+        '<button class="btn btn-outline btn-sm" data-acao="senha" data-id="'+h(f.id)+'">Senha</button>'+
+        '<button class="btn btn-outline btn-sm" data-acao="excluir" data-id="'+h(f.id)+'">Excluir</button>'+
+      '</div></td>'+
+    '</tr>';
   });
-  const btn=ev.target.querySelector('button[type="submit"]');
-  btn.disabled=true;
-  try{
-    const res=await fetch(API+'?op=permissoes&acao=definir',{
-      method:'POST',headers:headers(),
-      body:JSON.stringify({usuarioId:id,areas})
-    });
-    if(!res.ok){const j=await res.json();mostrarErro(j.message||'Erro ao salvar.');btn.disabled=false;return}
-    fecharModal('modalPermissoes');
-    mostrarSucesso('Permissões salvas.');
-    carregarPermissoes();
-  }catch(e){mostrarErro('Erro inesperado.');}finally{btn.disabled=false;}
+  html+='</tbody></table></div>';
+  el.innerHTML=html;
 }
 
-// --- Util ---
-function fecharModal(id){
-  document.getElementById(id).classList.remove('active');
-}
-document.querySelectorAll('.modal').forEach(m=>{
-  m.addEventListener('click',e=>{if(e.target===m)fecharModal(m.id)});
+document.getElementById('funcionariosLista').addEventListener('click',function(ev){
+  const b=ev.target.closest('button[data-acao]');
+  if(!b)return;
+  const id=b.getAttribute('data-id');
+  const f=listaAtual.find(x=>String(x.id)===String(id));
+  if(!f)return;
+  if(b.getAttribute('data-acao')==='editar') editar(f);
+  if(b.getAttribute('data-acao')==='senha') editarSenha(f);
+  if(b.getAttribute('data-acao')==='excluir') pedirExclusao(f);
 });
 
-async function logout(){
-  localStorage.removeItem('qual_token');
-  location.href='login-qualidade.html';
+function formatarData(v){
+  if(!v)return '—';
+  const d=new Date(v);
+  if(isNaN(d.getTime()))return '—';
+  return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+
+/* ---------- Relatórios ---------- */
+async function carregarRelatorio(){
+  const el=document.getElementById('relatorioLista');
+  try{
+    const j=await chamar('relatorios','GET');
+    relatorioAtual=j;
+    const r=j.resumo||{};
+    document.getElementById('stTotal').textContent=r.total||0;
+    document.getElementById('stAtivos').textContent=r.ativos30d||0;
+    document.getElementById('stMasters').textContent=(r.porPerfil&&(r.porPerfil.master||0)+(r.porPerfil.admin||0))||0;
+    document.getElementById('stPendentes').textContent=(r.porStatus&&r.porStatus.pending)||0;
+
+    const us=j.usuarios||[];
+    if(!us.length){ el.innerHTML='<div class="empty">Nenhum usuário registrado.</div>'; return; }
+    let html='<div style="overflow-x:auto"><table><thead><tr>'+
+      '<th>Usuário</th><th>RG</th><th>E-mail</th><th>Cargo / Setor</th><th>Perfil</th>'+
+      '<th>Status</th><th>Primeiro acesso</th><th>Último acesso</th><th>Cadastro</th>'+
+      '</tr></thead><tbody>';
+    us.forEach(u=>{
+      const ini=((u.nome||'?')[0]||'')+((u.sobrenome||'')[0]||'');
+      html+='<tr>'+
+        '<td><div class="user-chip"><div class="avatar">'+h(ini.toUpperCase())+'</div>'+h(u.nome)+' '+h(u.sobrenome)+'</div></td>'+
+        '<td>'+h(u.rg)+'</td>'+
+        '<td>'+h(u.email||'—')+'</td>'+
+        '<td>'+h(u.cargo||'—')+(u.setor?' · '+h(u.setor):'')+'</td>'+
+        '<td><span class="badge '+(u.perfil==='master'||u.perfil==='admin'?'b-master':'b-func')+'">'+h(u.perfil)+'</span></td>'+
+        '<td><span class="badge '+(u.status==='approved'?'b-aprovado':'b-pendente')+'">'+(u.status==='approved'?'Aprovado':'Pendente')+'</span></td>'+
+        '<td>'+(u.primeiroLogin?'Sim':'Não')+'</td>'+
+        '<td>'+h(formatarData(u.ultimoAcesso))+'</td>'+
+        '<td>'+h(formatarData(u.criadoEm))+'</td>'+
+      '</tr>';
+    });
+    html+='</tbody></table></div>';
+    el.innerHTML=html;
+  }catch(e){
+    if(e.message!=='sessao') el.innerHTML='<div class="empty">Erro ao gerar relatório. <button class="btn btn-outline btn-sm" onclick="carregarRelatorio()">Tentar de novo</button></div>';
+  }
+}
+
+function exportarCSV(){
+  const us=(relatorioAtual&&relatorioAtual.usuarios)||[];
+  if(!us.length){ mostrarErro('Nenhum dado para exportar.'); return; }
+  const cols=['Nome','Sobrenome','RG','E-mail','Cargo','Setor','Perfil','Status','Primeiro acesso','Último acesso','Cadastro'];
+  const linhas=[cols.join(';')];
+  us.forEach(u=>linhas.push([
+    u.nome,u.sobrenome,u.rg,u.email,u.cargo,u.setor,u.perfil,u.status,
+    u.primeiroLogin?'Sim':'Nao',
+    u.ultimoAcesso?formatarData(u.ultimoAcesso):'',
+    u.criadoEm?formatarData(u.criadoEm):''
+  ].map(v=>'"'+String(v===undefined||v===null?'':v).replace(/"/g,'""')+'"').join(';')));
+  const blob=new Blob(['\ufeff'+linhas.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='relatorio-usuarios-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  mostrarSucesso('Relatório exportado.');
+}
+
+/* ---------- Modal ---------- */
+function abrirModal(id){ document.getElementById(id).classList.add('active'); }
+function fecharModal(){ document.querySelectorAll('.modal').forEach(m=>m.classList.remove('active')); }
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) fecharModal(); });
+});
+
+function editar(f){
+  limparMensagens();
+  document.getElementById('mfErro').style.display='none';
+  document.getElementById('mfTitulo').textContent=f?'Editar funcionário':'Novo funcionário';
+  document.getElementById('fId').value=f?f.id:'';
+  document.getElementById('fNome').value=f?f.nome||'':'';
+  document.getElementById('fSobrenome').value=f?f.sobrenome||'':'';
+  document.getElementById('fRG').value=f?f.rg||'':'';
+  document.getElementById('fEmail').value=f?f.email||'':'';
+  document.getElementById('fCargo').value=f?f.cargo||'':'';
+  document.getElementById('fSetor').value=f?f.setor||'':'';
+  document.getElementById('fPerfil').value=f?(f.perfil||'funcionario'):'funcionario';
+  document.getElementById('fStatus').value=f&&f.status==='pending'?'pending':'approved';
+  document.getElementById('fSenha').value='';
+  document.getElementById('fSenha').placeholder=f?'Deixe em branco para manter a atual':'Defina a senha de acesso';
+  abrirModal('modalFunc');
+}
+
+function editarSenha(f){
+  editar(f);
+  setTimeout(()=>{ document.getElementById('fSenha').focus(); },80);
+}
+
+function mfErro(msg){
+  const el=document.getElementById('mfErro');
+  el.textContent=msg; el.style.display=msg?'block':'none';
+}
+
+async function salvar(ev){
+  ev.preventDefault();
+  const btn=document.getElementById('btnSalvar');
+  const body={
+    id:document.getElementById('fId').value||'',
+    nome:document.getElementById('fNome').value.trim(),
+    sobrenome:document.getElementById('fSobrenome').value.trim(),
+    rg:document.getElementById('fRG').value.trim(),
+    email:document.getElementById('fEmail').value.trim(),
+    cargo:document.getElementById('fCargo').value.trim(),
+    setor:document.getElementById('fSetor').value.trim(),
+    perfil:document.getElementById('fPerfil').value,
+    status:document.getElementById('fStatus').value,
+    senha:document.getElementById('fSenha').value
+  };
+  if(!body.nome||!body.rg){ mfErro('Nome e RG são obrigatórios.'); return false; }
+  btn.disabled=true; btn.textContent='Salvando…';
+  try{
+    const j=await chamar('func-salvar','POST',body);
+    fecharModal();
+    mostrarSucesso(body.id?'Funcionário atualizado com sucesso!':'Funcionário criado com sucesso!');
+    await carregar(true);
+    if(document.getElementById('aba-relatorios').classList.contains('active')) carregarRelatorio();
+  }catch(e){
+    mfErro(e.message||'Erro ao salvar.');
+  }finally{
+    btn.disabled=false; btn.textContent='Salvar';
+  }
   return false;
 }
 
-carregarDados();
+function pedirExclusao(f){
+  excluirId=f.id;
+  excluirNome=(f.nome||'')+' '+(f.sobrenome||'');
+  document.getElementById('exTexto').textContent='Deseja realmente excluir '+excluirNome+'? Esta ação não pode ser desfeita.';
+  abrirModal('modalExcluir');
+}
+
+async function confirmarExclusao(){
+  if(!excluirId)return;
+  try{
+    await chamar('func-excluir','POST',{id:excluirId});
+    fecharModal();
+    mostrarSucesso(excluirNome+' foi excluído.');
+    excluirId=null;
+    await carregar(true);
+  }catch(e){
+    fecharModal();
+    mostrarErro(e.message||'Erro ao excluir.');
+  }
+}
+
+/* ---------- Abas ---------- */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('aba-'+t.getAttribute('data-aba')).classList.add('active');
+    if(t.getAttribute('data-aba')==='relatorios') carregarRelatorio();
+  });
+});
+
+/* ---------- Sessão / saída ---------- */
+async function sair(){
+  try{ await chamar('logout','POST'); }catch(e){}
+  irParaLogin('');
+  return false;
+}
+
+/* ---------- Sincronização automática (sem botão) ---------- */
+function iniciarSyncAutomatica(){
+  setSync(navigator.onLine?'sync':'off');
+  carregar(true);
+  syncTimer=setInterval(()=>carregar(false),30000);
+  window.addEventListener('online',()=>{ setSync('sync'); carregar(true); });
+  window.addEventListener('offline',()=>setSync('off'));
+  window.addEventListener('focus',()=>carregar(true));
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) carregar(true); });
+}
+
+/* ---------- Boot ---------- */
+(async function(){
+  const ok=await verificarSessao();
+  if(!ok) return;
+  iniciarSyncAutomatica();
+})();
 </script>
 </body>
 </html>

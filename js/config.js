@@ -7,7 +7,12 @@
 (function(){
   'use strict';
 
-  const API_BASE = 'https://fechamento-qualidade.vercel.app';
+  /* Na web usa a MESMA origem (sem proxy entre dominios).
+     No app desktop (file://) aponta para o dominio oficial. */
+  const OFICIAL = 'https://grupogalvaqualidadeapp.vercel.app';
+  const API_BASE = (location.protocol === 'file:' || location.protocol === 'app:')
+    ? OFICIAL
+    : location.origin;
   window.GV_API_BASE = API_BASE;
 
   /* Intercepta fetch para redirecionar /api/* para a Vercel */

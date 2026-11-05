@@ -191,7 +191,7 @@ async function trocarSenha(ev){
       body:JSON.stringify(body)
     });
     const j=await res.json();
-    if(!res.ok){mostrarErro(j.message||'Não foi possível trocar a senha.');return}
+    if(!res.ok){mostrarErro(j.error||j.message||'Não foi possível trocar a senha.');return}
 
     if(modo==='primeiro'){
       mostrarSucesso('Senha definida com sucesso! Redirecionando...');
