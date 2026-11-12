@@ -45,6 +45,7 @@ const db = getApps().length ? getFirestore() : null;
 const RTDB_URL = 'https://galvabras-gestao-default-rtdb.firebaseio.com';
 
 let _rtdb = null;
+let _rtdbErro = null;
 function rtdb() {
   if (_rtdb) return _rtdb;
   if (!process.env.FIREBASE_PROJECT_ID) return null;
@@ -56,7 +57,8 @@ function rtdb() {
       || initializeApp({ credential: cert(firebaseConfig), databaseURL: RTDB_URL }, 'rtdb');
     _rtdb = getDatabase(app);
   } catch (e) {
-    console.error('[rnc] RTDB indisponível:', e.message);
+    _rtdbErro = e.message;
+    console.error('[rnc] RTDB indisponível:', _rtdbErro);
     _rtdb = null;
   }
   return _rtdb;
@@ -329,6 +331,10 @@ export default async function handler(req, res) {
       const openIssues = listaDe(leOpenIssues);
       const clientesSnap = listaDe(leClientes);
 
+      const rtLeiturasFalharam = [leSignLinks, leRncNotifs, leOpenIssues, leClientes]
+        .some((x) => !x.ok);
+      const rtdbDiagnostico = !r || rtLeiturasFalharam ? { ok: r != null, erro: _rtdbErro || 'leituras com timeout' } : null;
+
       /* Cliente do CNPJ (SEM expor hash de senha). */
       const bruto = clientesSnap.find(meu) || null;
       const cliente = bruto
@@ -349,7 +355,9 @@ export default async function handler(req, res) {
       });
       const rncs = docs.map((d) => ({ id: d.id, ...d.data() }));
 
-      res.status(200).json({ ok: true, cliente, links, notifs, oi, openIssues: oi, rncs });
+      const corpo = { ok: true, cliente, links, notifs, oi, openIssues: oi, rncs };
+      if (rtdbDiagnostico) corpo._diag = rtdbDiagnostico;
+      res.status(200).json(corpo);
     }
   } catch (e) {
     res.status(500).json({ error: e.message });
