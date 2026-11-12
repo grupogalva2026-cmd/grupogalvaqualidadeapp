@@ -13,7 +13,7 @@
      rtdbPatch(caminho, v) -> Promise<void>
    =========================================================================== */
 
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import crypto from 'crypto';
 
 const firebaseConfig = {
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -22,26 +22,56 @@ const firebaseConfig = {
 };
 
 const RTDB_URL = 'https://galvabras-gestao-default-rtdb.firebaseio.com';
+const TOKEN_URL = 'https://oauth2.googleapis.com/token';
+/* Escopos amplos para garantir acesso ao RTDB (inclui cloud-platform). */
+const SCOPES = [
+  'https://www.googleapis.com/auth/firebase.database',
+  'https://www.googleapis.com/auth/cloud-platform',
+  'https://www.googleapis.com/auth/userinfo.email',
+].join(' ');
 
-let _app = null;
 let _accessToken = null;
 let _tokenExpira = 0;
+
+function b64u(v) {
+  return Buffer.from(v).toString('base64url');
+}
 
 async function obterAccessToken() {
   if (_accessToken && Date.now() < _tokenExpira - 60000) return _accessToken;
 
-  if (!_app) {
-    if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
-      _app = initializeApp({ credential: cert(firebaseConfig) });
-    } else {
-      _app = getApps()[0];
-    }
-  }
+  const agora = Math.floor(Date.now() / 1000);
+  const payload = {
+    iss: firebaseConfig.clientEmail,
+    scope: SCOPES,
+    aud: TOKEN_URL,
+    exp: agora + 3600,
+    iat: agora,
+  };
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const segmento = (o) => b64u(JSON.stringify(o));
+  const assinaturaInput = segmento(header) + '.' + segmento(payload);
 
-  const tokenObj = await _app.credential.getAccessToken();
-  _accessToken = tokenObj.access_token;
-  /* O Admin SDK nao retorna expiracao; assume 1 hora e renova aos 50 min. */
-  _tokenExpira = Date.now() + 50 * 60 * 1000;
+  const assinatura = crypto.sign('RSA-SHA256', Buffer.from(assinaturaInput, 'utf8'), firebaseConfig.privateKey);
+  const jwt = assinaturaInput + '.' + b64u(assinatura);
+
+  const corpo = new URLSearchParams();
+  corpo.append('grant_type', 'urn:ietf:params:oauth:grant-type:jwt-bearer');
+  corpo.append('assertion', jwt);
+
+  const resp = await fetch(TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: corpo.toString(),
+  });
+  if (!resp.ok) {
+    const texto = await resp.text().catch(() => '');
+    throw new Error('Falha ao obter access token OAuth2: HTTP ' + resp.status + ' ' + texto);
+  }
+  const d = await resp.json();
+  if (!d.access_token) throw new Error('OAuth2 sem access_token: ' + JSON.stringify(d));
+  _accessToken = d.access_token;
+  _tokenExpira = agora + (d.expires_in || 3600);
   return _accessToken;
 }
 
