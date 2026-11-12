@@ -71,7 +71,7 @@ async function rtdbFetch(caminho, metodo, corpo) {
   const token = await obterAccessToken();
   const url = RTDB_URL + '/' + caminho.replace(/^\//, '') + '.json';
   const opts = {
-    method,
+    method: metodo,
     headers: {
       'Authorization': 'Bearer ' + token,
       'Content-Type': 'application/json',
@@ -82,8 +82,7 @@ async function rtdbFetch(caminho, metodo, corpo) {
   if (!resp.ok) {
     const texto = await resp.text().catch(() => '');
     throw new Error('RTDB REST ' + metodo + ' ' + caminho + ': HTTP ' + resp.status + ' ' + texto);
-  }
-  const texto = await resp.text();
+  }const texto = await resp.text();
   if (!texto) return null;
   return JSON.parse(texto);
 }
