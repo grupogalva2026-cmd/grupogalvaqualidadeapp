@@ -1,7 +1,7 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getDatabase } from 'firebase-admin/database';
 import crypto from 'crypto';
+import { rtdbGet, rtdbSet, rtdbLista, rtdbUpsertLista } from './rtdb-rest.js';
 
 /* ===========================================================================
    CADASTRO DE CLIENTES — /api/clientes  (tela clientes.html)
@@ -31,7 +31,6 @@ if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
 
 const db = getApps().length ? getFirestore() : null;
 
-const RTDB_URL = 'https://galvabras-gestao-default-rtdb.firebaseio.com';
 const CAMINHO_CLIENTES = 'galvabras/data/clientes';
 const CAMINHO_USERS = 'galvabras/data/users';
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
@@ -134,22 +133,6 @@ export function cnpjValido(str) {
 
 export const senhaPadraoDe = (cnpj) => soDigitos(cnpj).slice(0, 5);
 
-let _rtdb = null;
-function rtdb() {
-  if (_rtdb) return _rtdb;
-  if (!process.env.FIREBASE_PROJECT_ID) return null;
-  try {
-    const existente = getApps().find((a) => a.options && a.options.databaseURL);
-    const app = existente
-      || initializeApp({ credential: cert(firebaseConfig), databaseURL: RTDB_URL }, 'rtdb');
-    _rtdb = getDatabase(app);
-  } catch (e) {
-    console.error('[clientes] RTDB indisponível:', e.message);
-    _rtdb = null;
-  }
-  return _rtdb;
-}
-
 export function normalizarLista(bruto) {
   if (Array.isArray(bruto)) return bruto.filter((x) => x && typeof x === 'object');
   if (bruto && typeof bruto === 'object') {
@@ -159,10 +142,8 @@ export function normalizarLista(bruto) {
 }
 
 async function lerLista(caminho) {
-  const r = rtdb();
-  if (!r) throw new Error('RTDB indisponível');
-  const snap = await r.ref(caminho).once('value');
-  return normalizarLista(snap.val());
+  const v = await rtdbGet(caminho);
+  return rtdbLista(v);
 }
 
 /* Versão "pública" do cliente (SEM o hash da senha). */
@@ -261,27 +242,23 @@ async function opListar(req, res) {
 /* ---------------- salvar (criar / editar / inativar / senha padrão) --- */
 
 async function upsertCliente(cnpj, id, montar) {
-  const r = rtdb();
-  if (!r) throw new Error('RTDB indisponível');
-  let resultado = null;
-  await r.ref(CAMINHO_CLIENTES).transaction((atual) => {
-    if (atual != null && typeof atual !== 'object') return; /* não destrói dado inesperado */
-    const lista = normalizarLista(atual);
-    const iId = id ? lista.findIndex((x) => texto(x.id) === id) : -1;
-    const iCnpj = lista.findIndex((x) => soDigitos(x && x.cnpj) === cnpj && texto(x.id) !== id);
-    if (iCnpj >= 0) { resultado = { dup: true }; return; } /* CNPJ já usado: aborta */
-    if (iId >= 0) {
-      const atualizado = { ...lista[iId], ...montar(lista[iId]) };
-      lista[iId] = atualizado;
-      resultado = { cliente: { ...atualizado }, novo: false };
-      return lista;
-    }
+  const atual = await rtdbGet(CAMINHO_CLIENTES);
+  const lista = rtdbLista(atual);
+  const iId = id ? lista.findIndex((x) => texto(x.id) === id) : -1;
+  const iCnpj = lista.findIndex((x) => soDigitos(x && x.cnpj) === cnpj && texto(x.id) !== id);
+  if (iCnpj >= 0) return { dup: true }; /* CNPJ já usado: aborta sem gravar */
+
+  let resultado;
+  if (iId >= 0) {
+    const atualizado = { ...lista[iId], ...montar(lista[iId]) };
+    lista[iId] = atualizado;
+    resultado = { cliente: { ...atualizado }, novo: false };
+  } else {
     const novo = { id: Date.now(), ...montar(null) };
     lista.push(novo);
     resultado = { cliente: { ...novo }, novo: true };
-    return lista;
-  });
-  if (!resultado) throw new Error('Falha ao gravar o cliente');
+  }
+  await rtdbSet(CAMINHO_CLIENTES, lista);
   return resultado;
 }
 
@@ -365,10 +342,6 @@ export default async function handler(req, res) {
     }
     if (!PERFIS_ADM.includes(texto(sessao.perfil))) {
       res.status(403).json({ erro: 'Acesso restrito ao administrador (master/admin).' });
-      return;
-    }
-    if (!rtdb()) {
-      res.status(500).json({ erro: 'Firebase não configurado.' });
       return;
     }
 

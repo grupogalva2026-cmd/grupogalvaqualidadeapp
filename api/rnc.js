@@ -1,6 +1,6 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getDatabase } from 'firebase-admin/database';
+import { rtdbGet, rtdbSet, rtdbPatch, rtdbLista, rtdbEncontrarOuCriar, rtdbAtualizarItem } from './rtdb-rest.js';
 
 const firebaseConfig = {
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -44,50 +44,22 @@ const db = getApps().length ? getFirestore() : null;
 
 const RTDB_URL = 'https://galvabras-gestao-default-rtdb.firebaseio.com';
 
-let _rtdb = null;
-let _rtdbErro = null;
-function rtdb() {
-  if (_rtdb) return _rtdb;
-  if (!process.env.FIREBASE_PROJECT_ID) return null;
-  try {
-    /* Reaproveita um app que já tenha databaseURL; senão cria um app
-       nomeado só para o RTDB (o app principal só tem o Firestore). */
-    const existente = getApps().find((a) => a.options && a.options.databaseURL);
-    const app = existente
-      || initializeApp({ credential: cert(firebaseConfig), databaseURL: RTDB_URL }, 'rtdb');
-    _rtdb = getDatabase(app);
-  } catch (e) {
-    _rtdbErro = e.message;
-    console.error('[rnc] RTDB indisponível:', _rtdbErro);
-    _rtdb = null;
-  }
-  return _rtdb;
-}
-
 const soDigitos = (v) => String(v || '').replace(/\D/g, '');
 const pad2 = (n) => String(n).padStart(2, '0');
 const hojeISO = (d = new Date()) => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
 const agoraBR = () => new Date().toLocaleString('pt-BR');
 const txt = (v) => String(v == null ? '' : v);
 
-/* Anexa um registro em uma lista do RTDB (transação = sem duplicar nem
-   perder gravação concorrente). `jaExiste` deduplica (aborta se já há). */
+/* Anexa um registro em uma lista do RTDB (sem duplicar). `jaExiste` deduplica
+   (aborta se já há). Usa REST: lê, verifica, grava de volta. */
 async function anexarEmArray(caminho, registro, jaExiste) {
-  const r = rtdb();
-  if (!r) throw new Error('RTDB indisponível');
-  await r.ref(caminho).transaction((atual) => {
-    if (atual != null && !Array.isArray(atual)) return; /* não destrói dado inesperado */
-    const lista = Array.isArray(atual) ? atual.slice() : [];
-    if (jaExiste && lista.some(jaExiste)) return; /* já registrado -> aborta */
-    lista.push(registro);
-    return lista;
-  });
+  const pred = (x) => jaExiste && jaExiste(x);
+  await rtdbEncontrarOuCriar(caminho, pred, () => registro);
 }
 
+/* Grava (substitui) um valor no RTDB via REST. */
 async function gravarNoRtdb(caminho, valor) {
-  const r = rtdb();
-  if (!r) throw new Error('RTDB indisponível');
-  await r.ref(caminho).set(valor);
+  await rtdbSet(caminho, valor);
 }
 
 /* Monta todos os registros da ponte a partir do corpo do chamado (occ). */
@@ -286,16 +258,19 @@ export default async function handler(req, res) {
       }
 
       const fmt = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-      const r = rtdb();
 
       /* Leitura com timeout: nenhuma chamada pode travar o endpoint inteiro. */
       const RTDB_TIMEOUT_MS = 12000;
-      const ler = (caminho, rotulo) => {
-        if (!r) return Promise.resolve({ rotulo, ok: false, snap: null, erro: 'RTDB indisponível' });
-        return Promise.race([
-          r.ref(caminho).once('value').then((snap) => ({ rotulo, ok: true, snap })),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout ' + RTDB_TIMEOUT_MS + 'ms')), RTDB_TIMEOUT_MS)),
-        ]).catch((e) => ({ rotulo, ok: false, snap: null, erro: e.message }));
+      const ler = async (caminho, rotulo) => {
+        try {
+          const v = await Promise.race([
+            rtdbGet(caminho),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout ' + RTDB_TIMEOUT_MS + 'ms')), RTDB_TIMEOUT_MS)),
+          ]);
+          return { rotulo, ok: true, val: v };
+        } catch (e) {
+          return { rotulo, ok: false, val: null, erro: e.message };
+        }
       };
 
       const rFirestore = Promise.all([
@@ -318,11 +293,9 @@ export default async function handler(req, res) {
       ]);
 
       const listaDe = (resultado) => {
-        const v = resultado.snap ? resultado.snap.val() : null;
+        const v = resultado.val;
         if (!resultado.ok) console.warn('[rnc] leitura falhou (' + resultado.rotulo + '):', resultado.erro);
-        if (Array.isArray(v)) return v.filter((x) => x && typeof x === 'object');
-        if (v && typeof v === 'object') return Object.values(v).filter((x) => x && typeof x === 'object');
-        return [];
+        return rtdbLista(v);
       };
       const meu = (x) => soDigitos(x && x.cnpj) === cnpj;
 
@@ -333,7 +306,9 @@ export default async function handler(req, res) {
 
       const rtLeiturasFalharam = [leSignLinks, leRncNotifs, leOpenIssues, leClientes]
         .some((x) => !x.ok);
-      const rtdbDiagnostico = !r || rtLeiturasFalharam ? { ok: r != null, erro: _rtdbErro || 'leituras com timeout' } : null;
+      const rtdbDiagnostico = rtLeiturasFalharam
+        ? { ok: false, erro: 'leituras RTDB com timeout ou erro de rede' }
+        : null;
 
       /* Cliente do CNPJ (SEM expor hash de senha). */
       const bruto = clientesSnap.find(meu) || null;

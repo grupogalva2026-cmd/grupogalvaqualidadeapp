@@ -1,6 +1,6 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getDatabase } from 'firebase-admin/database';
 import crypto from 'crypto';
+import { rtdbEncontrarOuCriar, rtdbAtualizarItem, rtdbLista, rtdbGet, rtdbSet } from './rtdb-rest.js';
 
 /* ===========================================================================
    LOGIN DA ÁREA DO CLIENTE — POST /api/login-cliente
@@ -28,24 +28,7 @@ if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
   initializeApp({ credential: cert(firebaseConfig) });
 }
 
-const RTDB_URL = 'https://galvabras-gestao-default-rtdb.firebaseio.com';
 const CAMINHO = 'galvabras/data/clientes';
-
-let _rtdb = null;
-function rtdb() {
-  if (_rtdb) return _rtdb;
-  if (!process.env.FIREBASE_PROJECT_ID) return null;
-  try {
-    const existente = getApps().find((a) => a.options && a.options.databaseURL);
-    const app = existente
-      || initializeApp({ credential: cert(firebaseConfig), databaseURL: RTDB_URL }, 'rtdb');
-    _rtdb = getDatabase(app);
-  } catch (e) {
-    console.error('[login-cliente] RTDB indisponível:', e.message);
-    _rtdb = null;
-  }
-  return _rtdb;
-}
 
 /* ---------------- utilidades (exportadas p/ os testes) ---------------- */
 
@@ -127,40 +110,22 @@ export function montarClienteNovo(cnpj, senha) {
 /* ---------------- acesso à base (transação = sem duplicar) ------------- */
 
 /* Encontra o cliente pelo CNPJ; se não existir, CRIA (primeiro acesso).
-   Transação evita duplicar em acesso simultâneo. Devolve o registro. */
+   Usa REST: lê a lista, verifica duplicata, grava de volta. Devolve o registro. */
 async function encontrarOuCriar(cnpj, fabrica) {
-  const r = rtdb();
-  if (!r) throw new Error('RTDB indisponível');
-  let achado = null;
-  await r.ref(CAMINHO).transaction((atual) => {
-    if (atual != null && typeof atual !== 'object') return; /* dado inesperado: aborta */
-    const lista = normalizarClientes(atual);
-    const i = lista.findIndex((x) => soDigitos(x && x.cnpj) === cnpj);
-    if (i >= 0) { achado = { ...lista[i] }; return; } /* já existe: aborta (nada a gravar) */
-    const novo = fabrica();
-    lista.push(novo);
-    achado = { ...novo };
-    return lista;
-  });
-  if (!achado) throw new Error('Base de clientes inesperada');
-  return achado;
+  const pred = (x) => soDigitos(x && x.cnpj) === cnpj;
+  const lista = rtdbLista(await rtdbGet(CAMINHO));
+  const existente = lista.find(pred);
+  if (existente) return { ...existente };
+  const novo = fabrica();
+  await rtdbSet(CAMINHO, [...lista, novo]);
+  return { ...novo };
 }
 
 /* Atualiza campos do cliente existente (ex.: restaurar a senha padrão). */
 async function atualizarCliente(cnpj, patch) {
-  const r = rtdb();
-  if (!r) throw new Error('RTDB indisponível');
-  let ok = false;
-  await r.ref(CAMINHO).transaction((atual) => {
-    if (atual != null && typeof atual !== 'object') return;
-    const lista = normalizarClientes(atual);
-    const i = lista.findIndex((x) => soDigitos(x && x.cnpj) === cnpj);
-    if (i < 0) return;
-    lista[i] = { ...lista[i], ...patch };
-    ok = true;
-    return lista;
-  });
-  return ok;
+  const pred = (x) => soDigitos(x && x.cnpj) === cnpj;
+  const resultado = await rtdbAtualizarItem(CAMINHO, pred, patch);
+  return resultado !== null;
 }
 
 /* ---------------- handler ---------------- */
@@ -190,10 +155,6 @@ export default async function handler(req, res) {
     }
     if (!senha) {
       res.status(400).json({ erro: 'Digite a senha da sua empresa.' });
-      return;
-    }
-    if (!rtdb()) {
-      res.status(500).json({ erro: 'Serviço de login indisponível no momento. Recarregue a página ou fale com a Galva.' });
       return;
     }
 
