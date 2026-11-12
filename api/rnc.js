@@ -285,36 +285,59 @@ export default async function handler(req, res) {
 
       const fmt = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
       const r = rtdb();
-      const ler = (caminho) => (r ? r.ref(caminho).once('value') : Promise.resolve(null));
 
-      const [signLinks, rncNotifs, openIssues, clientesSnap, pares] = await Promise.all([
-        ler('galvabras/data/signLinks'),
-        ler('galvabras/data/rncNotifs'),
-        ler('galvabras/data/openIssues'),
-        ler('galvabras/data/clientes'),
-        Promise.all([
-          db.collection('rnc').where('cnpj', '==', cnpj).limit(50).get(),
-          db.collection('rnc').where('cnpj', '==', fmt).limit(50).get(),
-        ]),
+      /* Leitura com timeout: nenhuma chamada pode travar o endpoint inteiro. */
+      const RTDB_TIMEOUT_MS = 12000;
+      const ler = (caminho, rotulo) => {
+        if (!r) return Promise.resolve({ rotulo, ok: false, snap: null, erro: 'RTDB indisponível' });
+        return Promise.race([
+          r.ref(caminho).once('value').then((snap) => ({ rotulo, ok: true, snap })),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout ' + RTDB_TIMEOUT_MS + 'ms')), RTDB_TIMEOUT_MS)),
+        ]).catch((e) => ({ rotulo, ok: false, snap: null, erro: e.message }));
+      };
+
+      const rFirestore = Promise.all([
+        db.collection('rnc').where('cnpj', '==', cnpj).limit(50).get(),
+        db.collection('rnc').where('cnpj', '==', fmt).limit(50).get(),
       ]);
 
-      const listaDe = (snap) => {
-        const v = snap ? snap.val() : null;
+      const [
+        leSignLinks,
+        leRncNotifs,
+        leOpenIssues,
+        leClientes,
+        pares,
+      ] = await Promise.all([
+        ler('galvabras/data/signLinks', 'signLinks'),
+        ler('galvabras/data/rncNotifs', 'rncNotifs'),
+        ler('galvabras/data/openIssues', 'openIssues'),
+        ler('galvabras/data/clientes', 'clientes'),
+        rFirestore,
+      ]);
+
+      const listaDe = (resultado) => {
+        const v = resultado.snap ? resultado.snap.val() : null;
+        if (!resultado.ok) console.warn('[rnc] leitura falhou (' + resultado.rotulo + '):', resultado.erro);
         if (Array.isArray(v)) return v.filter((x) => x && typeof x === 'object');
         if (v && typeof v === 'object') return Object.values(v).filter((x) => x && typeof x === 'object');
         return [];
       };
       const meu = (x) => soDigitos(x && x.cnpj) === cnpj;
 
+      const signLinks = listaDe(leSignLinks);
+      const rncNotifs = listaDe(leRncNotifs);
+      const openIssues = listaDe(leOpenIssues);
+      const clientesSnap = listaDe(leClientes);
+
       /* Cliente do CNPJ (SEM expor hash de senha). */
-      const bruto = listaDe(clientesSnap).find(meu) || null;
+      const bruto = clientesSnap.find(meu) || null;
       const cliente = bruto
         ? (({ senhaHash, senhaTemporaria, ...resto }) => resto)(bruto)
         : null;
 
-      const links = listaDe(signLinks).filter(meu);
-      const notifs = listaDe(rncNotifs).filter(meu);
-      const oi = listaDe(openIssues).filter(meu);
+      const links = signLinks.filter(meu);
+      const notifs = rncNotifs.filter(meu);
+      const oi = openIssues.filter(meu);
 
       /* Chamados do próprio CNPJ ("Meus chamados" do portal). O formato
          pode ser dígitos (portal) ou mascarado (formulário antigo). */
