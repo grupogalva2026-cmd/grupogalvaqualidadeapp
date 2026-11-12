@@ -89,7 +89,7 @@ async function rtdbFetch(caminho, metodo, corpo) {
   const resp = await fetch(url, opts);
   if (!resp.ok) {
     const texto = await resp.text().catch(() => '');
-    throw new Error('RTDB REST ' + metodo + ' ' + caminho + ': HTTP ' + resp.status + ' ' + texto);
+    throw new Error('RTDB REST ' + metodo + ' ' + caminho + ': HTTP ' + resp.status + ' ' + texto + ' | projeto=' + firebaseConfig.projectId);
   }
   const texto = await resp.text();
   if (!texto) return null;
