@@ -189,6 +189,6 @@ export default async function handler(req, res) {
     });
   } catch (e) {
     console.error('[login-cliente]', e);
-    res.status(500).json({ erro: 'Não foi possível entrar. Tente novamente ou fale com a Galva.', _diag: e.message });
+    res.status(500).json({ erro: 'Não foi possível entrar. Tente novamente ou fale com a Galva.', _diag: String(e) });
   }
 }
