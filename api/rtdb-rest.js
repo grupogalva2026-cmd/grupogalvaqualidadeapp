@@ -38,7 +38,7 @@ async function obterAccessToken() {
     }
   }
 
-  const tokenObj = await _app.credential().getAccessToken();
+  const tokenObj = await _app.credential.getAccessToken();
   _accessToken = tokenObj.access_token;
   /* O Admin SDK nao retorna expiracao; assume 1 hora e renova aos 50 min. */
   _tokenExpira = Date.now() + 50 * 60 * 1000;
