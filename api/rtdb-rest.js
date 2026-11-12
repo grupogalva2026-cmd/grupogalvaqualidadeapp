@@ -4,15 +4,16 @@
    O Firebase Admin SDK para RTDB usa WebSocket/long-polling, que nao
    funciona no ambiente serverless da Vercel (timeout nas leituras).
    Este modulo usa a REST API do Firebase (HTTP simples) com um access
-   token OAuth2 obtido via JWT da conta de servico.
+   token obtido via Firebase Admin SDK (credencial de servico), que
+   bypassa as regras de seguranca do RTDB.
 
    Funcoes:
-     rtdbGet(caminho)      -> Promise<any>   (ex.: 'galvabras/data/clientes')
+     rtdbGet(caminho)      -> Promise<any>
      rtdbSet(caminho, v)   -> Promise<void>
-     rtdbPatch(caminho, v) -> Promise<void>  (merge parcial)
+     rtdbPatch(caminho, v) -> Promise<void>
    =========================================================================== */
 
-import crypto from 'crypto';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 const firebaseConfig = {
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -21,49 +22,26 @@ const firebaseConfig = {
 };
 
 const RTDB_URL = 'https://galvabras-gestao-default-rtdb.firebaseio.com';
-const SCOPE = 'https://www.googleapis.com/auth/firebase.database';
-const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
+let _app = null;
 let _accessToken = null;
 let _tokenExpira = 0;
-
-function b64u(v) {
-  return Buffer.from(v).toString('base64url');
-}
 
 async function obterAccessToken() {
   if (_accessToken && Date.now() < _tokenExpira - 60000) return _accessToken;
 
-  const agora = Math.floor(Date.now() / 1000);
-  const payload = {
-    iss: firebaseConfig.clientEmail,
-    scope: SCOPE,
-    aud: TOKEN_URL,
-    exp: agora + 3600,
-    iat: agora,
-  };
-  const header = { alg: 'RS256', typ: 'JWT' };
-  const segmento = (o) => b64u(JSON.stringify(o));
-  const assinaturaInput = segmento(header) + '.' + segmento(payload);
+  if (!_app) {
+    if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
+      _app = initializeApp({ credential: cert(firebaseConfig) });
+    } else {
+      _app = getApps()[0];
+    }
+  }
 
-  /* Assina com RSA-SHA256 usando a chave privada da conta de servico. */
-  const assinatura = crypto.sign('RSA-SHA256', Buffer.from(assinaturaInput, 'utf8'), firebaseConfig.privateKey);
-  const jwt = assinaturaInput + '.' + b64u(assinatura);
-
-  const corpo = new URLSearchParams();
-  corpo.append('grant_type', 'urn:ietf:params:oauth:grant-type:jwt-bearer');
-  corpo.append('assertion', jwt);
-
-  const resp = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: corpo.toString(),
-  });
-  if (!resp.ok) throw new Error('Falha ao obter access token OAuth2: HTTP ' + resp.status);
-  const d = await resp.json();
-  if (!d.access_token) throw new Error('OAuth2 sem access_token: ' + JSON.stringify(d));
-  _accessToken = d.access_token;
-  _tokenExpira = agora + (d.expires_in || 3600);
+  const tokenObj = await _app.credential().getAccessToken();
+  _accessToken = tokenObj.access_token;
+  /* O Admin SDK nao retorna expiracao; assume 1 hora e renova aos 50 min. */
+  _tokenExpira = Date.now() + 50 * 60 * 1000;
   return _accessToken;
 }
 
@@ -81,7 +59,8 @@ async function rtdbFetch(caminho, metodo, corpo) {
   if (!resp.ok) {
     const texto = await resp.text().catch(() => '');
     throw new Error('RTDB REST ' + metodo + ' ' + caminho + ': HTTP ' + resp.status + ' ' + texto);
-  }const texto = await resp.text();
+  }
+  const texto = await resp.text();
   if (!texto) return null;
   return JSON.parse(texto);
 }
