@@ -3,132 +3,316 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ============ GATE DE LOGIN (Etapa 2) ============
+     Sem sessão válida da Área do Cliente, volta para o index.html
+     (tela de login). Preserva a query string (?rnc=TOKEN) para o link
+     de preenchimento de RNC continuar funcionando após o login.
+     A verificação reforçada (Firebase Authentication) fica no
+     js/portal-do-cliente.js, carregado após o js/rnc.js. -->
+<script>
+(function(){
+  try{
+    var s=JSON.parse(localStorage.getItem('gv_cliente_rnc')||'null');
+    if(!(s&&s.cnpj&&s.exp&&s.exp>Date.now())){
+      location.replace('index.html'+location.search);
+    }
+  }catch(e){
+    location.replace('index.html'+location.search);
+  }
+})();
+</script>
+
 <title>Área do Cliente · Abertura e acompanhamento de RNC</title>
-  <meta name="description" content="Portal Galvabras para clientes: abra uma reclamação ou não conformidade (RNC) com anexos e protocolo, e acompanhe o status do tratamento pela sua empresa.">
-  <meta name="robots" content="index, follow">
-  <meta name="author" content="Grupo Galva">
-  <meta name="theme-color" content="#0a0e17">
-  <link rel="canonical" href="https://galvabras-gestao-ti.vercel.app/rnc.html">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="GALVABRAS · Grupo Galva">
-  <meta property="og:locale" content="pt_BR">
-  <meta property="og:title" content="Área do Cliente · Abertura e acompanhamento de RNC">
-  <meta property="og:description" content="Portal Galvabras para clientes: abra uma reclamação ou não conformidade (RNC) com anexos e protocolo, e acompanhe o status do tratamento pela sua empresa.">
-  <meta property="og:url" content="https://galvabras-gestao-ti.vercel.app/rnc.html">
-  <meta property="og:image" content="https://galvabras-gestao-ti.vercel.app/og-image.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="GALVABRAS - Sistema de Gestão do Grupo Galva">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Área do Cliente · Abertura e acompanhamento de RNC">
-  <meta name="twitter:description" content="Portal Galvabras para clientes: abra uma reclamação ou não conformidade (RNC) com anexos e protocolo, e acompanhe o status do tratamento pela sua empresa.">
-  <meta name="twitter:image" content="https://galvabras-gestao-ti.vercel.app/og-image.png">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Área do Cliente · Abertura e acompanhamento de RNC","description":"Portal Galvabras para registro e acompanhamento de não conformidades.","inLanguage":"pt-BR","isPartOf":{"@type":"WebSite","name":"GALVABRAS · Grupo Galva","url":"https://galvabras-gestao-ti.vercel.app"},"breadcrumb":{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Início","item":"https://galvabras-gestao-ti.vercel.app/"},{"@type":"ListItem","position":2,"name":"Área do Cliente","item":"https://galvabras-gestao-ti.vercel.app/rnc.html"}]}}</script>
-<link rel="icon" href="logogrupo.jpeg">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- ============ Metadados ============ -->
+<meta name="description" content="Portal Galvabras para clientes: abra uma reclamação ou não conformidade (RNC) com anexos e protocolo, e acompanhe o status do tratamento pela sua empresa.">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Grupo Galva">
+<meta name="theme-color" content="#0A1F44">
+<link rel="canonical" href="https://grupogalvaqualidadeapp.vercel.app/rnc.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GALVABRAS · Grupo Galva">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Área do Cliente · Abertura e acompanhamento de RNC">
+<meta property="og:description" content="Portal Galvabras para clientes: abra uma reclamação ou não conformidade (RNC) com anexos e protocolo, e acompanhe o status do tratamento pela sua empresa.">
+<meta property="og:url" content="https://grupogalvaqualidadeapp.vercel.app/rnc.html">
+<meta property="og:image" content="https://grupogalvaqualidadeapp.vercel.app/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="GALVABRAS - Sistema de Gestão do Grupo Galva">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Área do Cliente · Abertura e acompanhamento de RNC">
+<meta name="twitter:description" content="Portal Galvabras para clientes: abra uma reclamação ou não conformidade (RNC) com anexos e protocolo, e acompanhe o status do tratamento pela sua empresa.">
+<meta name="twitter:image" content="https://grupogalvaqualidadeapp.vercel.app/assets/og-image.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Área do Cliente · Abertura e acompanhamento de RNC","description":"Portal Galvabras para registro e acompanhamento de não conformidades.","inLanguage":"pt-BR","isPartOf":{"@type":"WebSite","name":"GALVABRAS · Grupo Galva","url":"https://grupogalvaqualidadeapp.vercel.app"},"breadcrumb":{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Início","item":"https://grupogalvaqualidadeapp.vercel.app/"},{"@type":"ListItem","position":2,"name":"Área do Cliente","item":"https://grupogalvaqualidadeapp.vercel.app/rnc.html"}]}}</script>
+
+<!-- Ícone e identidade visual -->
+<link rel="icon" href="assets/logogrupo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/public-rnc.css">
 <link rel="stylesheet" href="css/a11y.css?v=20261021b">
 </head>
 <body>
 
-<div class="topo">
-  <div style="display:flex;align-items:center;gap:14px">
-    <img src="logogrupo-transparente.png" alt="Grupo Galva">
-    <div>
-      <div style="font-weight:800;font-size:15px">ÁREA DO CLIENTE</div>
-      <div class="marca">GALVABRAS · Galvanização a Fogo</div>
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+<!-- =============================================================================
+     CABEÇALHO — logo + "Área do Cliente" / "Galvabras · Galvanização a Fogo"
+     A logo fica em assets/ (não mova o arquivo: o caminho já está correto).
+     ========================================================================== -->
+<header class="topo">
+  <div class="topo-marca">
+    <span class="logo-chip">
+      <img src="assets/logogrupo-transparente.png" alt="Grupo Galva"
+           onerror="this.onerror=null;this.src='assets/logo-grupo-galva.svg'">
+    </span>
+    <div class="topo-titulos">
+      <div class="topo-titulo">Área do Cliente</div>
+      <div class="marca">Galvabras · Galvanização a Fogo</div>
     </div>
   </div>
-  <div id="topoUsuario" class="oculto" style="display:flex;align-items:center;gap:10px">
-    <span id="topoNome" style="font-size:12px;color:#cbd5e1"></span>
-    <button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:12px" onclick="sair()">Sair</button>
+  <!-- Só aparece quando há sessão (controlado pelo js/rnc.js) -->
+  <div id="topoUsuario" class="oculto topo-usuario">
+    <span id="topoNome" class="topo-nome"></span>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="sair()">Sair</button>
   </div>
-</div>
+</header>
 
-<div class="container">
+<main class="container" id="conteudo">
 
-  <!-- ============ TELA 1: IDENTIFICACAO (sem senha) ============ -->
-  <div id="paginaLogin">
-    <div class="card" style="max-width:520px;margin:24px auto">
-      <div style="text-align:center;margin-bottom:18px">
-        <div class="badge b-s" style="margin-bottom:10px">ÁREA DO CLIENTE</div>
-        <h2 style="margin-bottom:4px">Abra sua reclamação</h2>
-        <p>Informe o CNPJ e o botão abre o formulário do chamado. Os dados vão direto para o sistema interno SAC/RNC da Galva.</p>
-      </div>
-      <div id="loginErro" class="alert alert-e oculto"></div>
-      <div class="fg"><label class="fl" for="cCnpj">CNPJ <span class="req">*</span></label><input type="text" class="fi" id="cCnpj" placeholder="00.000.000/0000-00" inputmode="numeric" maxlength="18" autocomplete="username" oninput="maskCnpj(this)" onpaste="setTimeout(function(){maskCnpj(document.getElementById('cCnpj'))},0)"></div>
+  <!-- =========================================================================
+       TELA 1 — IDENTIFICAÇÃO (CNPJ + filial), sem senha
+       ====================================================================== -->
+  <section id="paginaLogin">
+    <div class="hero">
+      <span class="badge b-i">ÁREA DO CLIENTE</span>
+      <h1>Abra sua reclamação</h1>
+      <p>Informe o CNPJ e o botão abre o formulário do chamado. Os dados vão direto para o sistema interno SAC/RNC da Galva.</p>
+    </div>
+
+    <div class="card card-login">
+      <!-- Mensagem de erro do CNPJ (aparece abaixo do campo) -->
+      <div id="loginErro" class="alert alert-e oculto" role="alert"></div>
+
+      <!-- CNPJ -->
       <div class="fg">
-        <label class="fl">Filial</label>
-        <div class="filial" id="cFilial">
-          <button type="button" class="on" data-fil="SP" onclick="escolherFilial(this)">São Paulo - SP</button>
-          <button type="button" data-fil="PR" onclick="escolherFilial(this)">Paraná - PR</button>
+        <label class="fl" for="cCnpj">CNPJ <span class="req">*</span></label>
+        <div class="inp-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="6" y1="10" x2="12" y2="10"/><line x1="6" y1="14" x2="10" y2="14"/></svg>
+          <input type="text" class="fi" id="cCnpj" placeholder="00.000.000/0000-00" inputmode="numeric" maxlength="18"
+                 autocomplete="username"
+                 oninput="maskCnpj(this)"
+                 onpaste="setTimeout(function(){maskCnpj(document.getElementById('cCnpj'))},0)">
         </div>
+        <p class="help">Digite os 14 números do CNPJ da empresa que abriu o pedido.</p>
       </div>
-      <button class="btn" id="btnEntrar" onclick="irParaFormulario()">📨 Abrir formulário do chamado</button>
+
+      <button type="button" class="btn" id="btnEntrar" onclick="irParaFormulario()">📨 Abrir formulário do chamado</button>
+
       <div class="sep"></div>
       <p style="text-align:center">Já tem senha? Entre na <b>Área do Cliente</b> (tela principal) para <b>acompanhar o status</b> dos seus chamados.</p>
-      <p style="text-align:center;font-size:12px;color:#64748b;margin-top:6px">Não tem senha? Solicite à <b>Área da Qualidade</b> ou ao <b>Departamento Comercial (SAC/RNC)</b> da Galva.</p>
+      <p class="help" style="text-align:center;margin-top:8px">Não tem senha? Solicite à <b>Área da Qualidade</b> ou ao <b>Departamento Comercial (SAC/RNC)</b> da Galva.</p>
     </div>
-  </div>
+  </section>
 
-  <!-- ============ TELA 2: FORMULARIO COMPLETO DO CHAMADO ============ -->
-  <div id="paginaFormulario" class="oculto">
-    <div class="card" style="max-width:900px;margin:16px auto">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+  <!-- =========================================================================
+       TELA 2 — FORMULÁRIO DO CHAMADO
+       Campos, ids, validações e envio: inalterados (js/rnc.js).
+       ====================================================================== -->
+  <section id="paginaFormulario" class="oculto">
+    <div class="card">
+      <div class="form-topo">
         <div>
-          <div class="badge b-s" style="margin-bottom:8px">ÁREA DO CLIENTE</div>
-          <h2 style="margin-bottom:4px">Formulário da não conformidade</h2>
+          <span class="badge b-i" style="margin-bottom:8px">ÁREA DO CLIENTE</span>
+          <h2>Formulário da não conformidade</h2>
           <p id="formCliResumo">Preencha todos os campos e anexe as fotos e o documento da nota fiscal.</p>
         </div>
-        <button class="btn btn-ghost" style="width:auto;padding:9px 16px;font-size:12px" onclick="voltarParaCnpj()">← Voltar</button>
-      </div>
-      <div id="erroCli" class="alert alert-e oculto"></div>
-
-      <div class="section-title">Identificação</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
-        <div class="fg"><label class="fl">Data <span class="req">*</span></label><input type="date" class="fi" id="fData" onchange="syncMesDia()"></div>
-        <div class="fg"><label class="fl">Mês <span class="req">*</span></label><select class="fi" id="fMes" onchange="syncMesDia()"></select></div>
-        <div class="fg"><label class="fl">Dia <span class="req">*</span></label><input type="number" class="fi" id="fDia" min="1" max="31" placeholder="1-31"></div>
-        <div class="fg"><label class="fl">Cliente / Razão Social <span class="req">*</span></label><input type="text" class="fi" id="fCliente" placeholder="Nome do cliente"></div>
-        <div class="fg"><label class="fl">O.S <span class="req">*</span></label><input type="text" class="fi" id="fOs" placeholder="Número da OS"></div>
-        <div class="fg"><label class="fl">Romaneio <span class="req">*</span></label><input type="text" class="fi" id="fRomaneio" placeholder="Número do romaneio"></div>
-        <div class="fg"><label class="fl">Nota Fiscal (nº) <span class="req">*</span></label><input type="text" class="fi" id="fNf" placeholder="Número da nota fiscal"></div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="voltarParaCnpj()">← Voltar</button>
       </div>
 
-      <div class="section-title" style="margin-top:18px">Evidências (anexos)</div>
+      <!-- Erros do formulário / tela de confirmação de sucesso -->
+      <div id="erroCli" class="alert alert-e oculto" role="alert"></div>
+
+      <!-- ---------- Seção: Identificação ---------- -->
+      <div class="section-title">
+        <span class="st-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        Identificação
+      </div>
+      <div class="grade">
+        <div class="fg">
+          <label class="fl" for="fData">Data <span class="req">*</span></label>
+          <input type="date" class="fi" id="fData" onchange="syncMesDia()">
+        </div>
+        <div class="fg">
+          <label class="fl" for="fMes">Mês <span class="req">*</span></label>
+          <select class="fi" id="fMes" onchange="syncMesDia()"></select>
+        </div>
+        <div class="fg">
+          <label class="fl" for="fDia">Dia <span class="req">*</span></label>
+          <input type="number" class="fi" id="fDia" min="1" max="31" placeholder="1-31">
+        </div>
+        <div class="fg">
+          <label class="fl" for="fCliente">Cliente / Razão Social <span class="req">*</span></label>
+          <input type="text" class="fi" id="fCliente" placeholder="Nome do cliente">
+        </div>
+      </div>
+
+      <!-- CNPJ vindo do login (preenchido e travado — Etapa 2) -->
       <div class="fg">
-        <label class="fl">Fotos do produto / peça (até 3, leves)</label>
-        <input type="file" class="fi" id="fFotos" accept="image/*" multiple onchange="anexarFotos(this)">
-        <div id="hintFotos" style="font-size:11px;color:#64748b;margin-top:6px">Até 3 fotos. As imagens são reduzidas automaticamente para ficar leves. <b>É obrigatório anexar ao menos 1 foto ou 1 documento.</b></div>
-        <div id="previaFotos" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+        <label class="fl" for="fCnpjVis">CNPJ <span class="req">*</span></label>
+        <input type="text" class="fi" id="fCnpjVis" placeholder="00.000.000/0000-00"
+               inputmode="numeric" readonly aria-readonly="true"
+               title="Preenchido automaticamente com o CNPJ do seu acesso">
+        <p class="help">Preenchido automaticamente com o CNPJ usado no login (não é possível alterar).</p>
+      </div>
+
+      <!-- Filial — chips grandes, com destaque no selecionado -->
+      <div class="fg">
+        <label class="fl">Filial <span class="req">*</span></label>
+        <div class="filial" id="cFilial" role="group" aria-label="Escolha a filial">
+          <button type="button" class="on" data-fil="SP" onclick="escolherFilial(this)">
+            <span class="uf">SP</span> São Paulo - SP
+          </button>
+          <button type="button" data-fil="PR" onclick="escolherFilial(this)">
+            <span class="uf">PR</span> Paraná - PR
+          </button>
+        </div>
+        <p class="help">Escolha a unidade que atendeu o seu pedido.</p>
+      </div>
+
+      <!-- ---------- Seção: Dados do pedido ---------- -->
+      <div class="section-title">
+        <span class="st-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+        </span>
+        Dados do pedido
+      </div>
+      <div class="grade">
+        <div class="fg">
+          <label class="fl" for="fOs">O.S <span class="req">*</span></label>
+          <input type="text" class="fi" id="fOs" placeholder="Número da OS">
+        </div>
+        <div class="fg">
+          <label class="fl" for="fRomaneio">Romaneio <span class="req">*</span></label>
+          <input type="text" class="fi" id="fRomaneio" placeholder="Número do romaneio">
+        </div>
+        <div class="fg">
+          <label class="fl" for="fNf">Nota Fiscal (nº) <span class="req">*</span></label>
+          <input type="text" class="fi" id="fNf" placeholder="Número da nota fiscal">
+        </div>
+      </div>
+
+      <!-- ---------- Seção: Evidências (anexos) ---------- -->
+      <div class="section-title">
+        <span class="st-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </span>
+        Evidências (anexos)
+      </div>
+
+      <!-- Fotos: área de upload com arrastar e soltar -->
+      <div class="fg">
+        <label class="fl" for="fFotos">Fotos do produto / peça (até 3, leves)</label>
+        <div class="drop" id="dropFotos">
+          <input type="file" class="drop-in" id="fFotos" accept="image/*" multiple
+                 onchange="anexarFotos(this)" aria-describedby="hintFotos">
+          <div class="drop-face" aria-hidden="true">
+            <span class="drop-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </span>
+            <b>Arraste as fotos aqui</b>
+            <span>ou toque para escolher · JPG ou PNG</span>
+            <span class="drop-btn">Selecionar fotos</span>
+          </div>
+        </div>
+        <div id="hintFotos" class="hint">Até 3 fotos. As imagens são reduzidas automaticamente para ficar leves. <b>É obrigatório anexar ao menos 1 foto ou 1 documento.</b></div>
+        <div id="previaFotos" class="previa"></div>
+      </div>
+
+      <!-- Documento da NF: área de upload com arrastar e soltar -->
+      <div class="fg">
+        <label class="fl" for="fDocs">Documento da Nota Fiscal (PDF ou XML) — até 2 arquivos</label>
+        <div class="drop" id="dropDocs">
+          <input type="file" class="drop-in" id="fDocs" accept="application/pdf,.pdf,.xml,text/xml" multiple
+                 onchange="anexarDocs(this)" aria-describedby="hintDocs">
+          <div class="drop-face" aria-hidden="true">
+            <span class="drop-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </span>
+            <b>Arraste o arquivo aqui</b>
+            <span>ou toque para escolher · PDF ou XML · até 500 KB cada</span>
+            <span class="drop-btn">Selecionar arquivo</span>
+          </div>
+        </div>
+        <div id="hintDocs" class="hint">Até 2 arquivos: PDF da nota fiscal ou XML (NFe). Cada um até 500 KB. <b>É obrigatório anexar ao menos 1 foto ou 1 documento.</b></div>
+        <div id="previaDocs" class="previa"></div>
+      </div>
+
+      <!-- ---------- Seção: Não conformidade ---------- -->
+      <div class="section-title">
+        <span class="st-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+        Não conformidade
+      </div>
+      <div class="grade">
+        <div class="fg">
+          <label class="fl" for="fMaterial">Material <span class="req">*</span></label>
+          <input type="text" class="fi" id="fMaterial" placeholder="Produto / material do lote">
+        </div>
+        <div class="fg">
+          <label class="fl" for="fQtd">Quantidade (KG) <span class="req">*</span></label>
+          <input type="number" class="fi" id="fQtd" min="1" step="1" placeholder="0">
+        </div>
       </div>
       <div class="fg">
-        <label class="fl">Documento da Nota Fiscal (PDF ou XML) — até 2 arquivos</label>
-        <input type="file" class="fi" id="fDocs" accept="application/pdf,.pdf,.xml,text/xml" multiple onchange="anexarDocs(this)">
-        <div id="hintDocs" style="font-size:11px;color:#64748b;margin-top:6px">Até 2 arquivos: PDF da nota fiscal ou XML (NFe). Cada um até 500 KB. <b>É obrigatório anexar ao menos 1 foto ou 1 documento.</b></div>
-        <div id="previaDocs" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+        <label class="fl" for="fDescricao">Descrição da não conformidade <span class="req">*</span></label>
+        <textarea class="fi" id="fDescricao" rows="4" placeholder="Descreva a não conformidade encontrada"></textarea>
       </div>
 
-      <div class="section-title" style="margin-top:18px">Material</div>
-      <div class="fg"><label class="fl">Material <span class="req">*</span></label><input type="text" class="fi" id="fMaterial" placeholder="Produto / material do lote"></div>
-      <div class="fg"><label class="fl">Descrição da não conformidade <span class="req">*</span></label><textarea class="fi" id="fDescricao" rows="4" placeholder="Descreva a não conformidade encontrada"></textarea></div>
-      <div class="fg"><label class="fl">Quantidade (KG) <span class="req">*</span></label><input type="number" class="fi" id="fQtd" min="1" step="1" placeholder="0"></div>
-
-      <div class="progresso"><i id="progCli"></i></div>
-      <button class="btn" id="btnEnviarChamado" onclick="enviarChamadoCompleto()">📨 Enviar chamado</button>
-      <div class="carregando" id="carregandoCli"><div class="spinner"></div><div style="font-size:13px;color:#94a3b8">Enviando...</div></div>
+      <!-- Progresso + envio -->
+      <div class="progresso" aria-hidden="true"><i id="progCli"></i></div>
+      <div class="acoes">
+        <button type="button" class="btn" id="btnEnviarChamado" onclick="enviarChamadoCompleto()">📨 Enviar chamado</button>
+      </div>
+      <div class="carregando" id="carregandoCli">
+        <div class="spinner"></div>
+        <div class="txt">Enviando...</div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <!-- ============ ÁREA ============ -->
-  <div id="paginaArea" class="oculto">
+  <!-- =========================================================================
+       ÁREA DO CLIENTE LOGADO (acompanhamento de RNCs) — lógica inalterada
+       ====================================================================== -->
+  <section id="paginaArea" class="oculto">
+
+    <!-- Ação principal: abrir uma nova reclamação (Etapa 2) -->
+    <div class="card card-acao">
+      <div class="card-acao-txt">
+        <h3>📨 Abrir nova reclamação</h3>
+        <p>Registre uma não conformidade (SAC/RNC) com fotos e documento da nota fiscal. O CNPJ e a razão social vêm do seu acesso e não podem ser alterados.</p>
+      </div>
+      <button type="button" class="btn" onclick="abrirFormularioCliente()">Abrir formulário do chamado</button>
+    </div>
+
+    <!-- Meus chamados: somente leitura e somente do próprio CNPJ (Etapa 2) -->
+    <div class="card" id="cardMeusChamados">
+      <h3>📞 Meus chamados</h3>
+      <p style="margin-bottom:12px">Reclamações abertas pelo CNPJ da sua empresa, com status atualizado. <b>Somente leitura</b> — para dar andamento, fale com a Área da Qualidade.</p>
+      <div id="listaMeusChamados"></div>
+    </div>
+
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div class="form-topo">
         <div>
-          <h2 style="margin-bottom:2px">Minhas RNCs</h2>
+          <h2>Minhas RNCs</h2>
           <p id="subArea">Documentos enviados pela Galva que aguardam o seu preenchimento.</p>
         </div>
-        <button class="btn btn-ghost" style="width:auto;padding:9px 16px;font-size:12px" onclick="carregar()">⟳ Atualizar</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="carregar()">⟳ Atualizar</button>
       </div>
     </div>
 
@@ -151,50 +335,157 @@
     <div class="card">
       <h3>💡 Enviar sugestão</h3>
       <p style="margin-bottom:12px">Tem uma ideia ou reclamação que não é uma RNC? Envie aqui. A equipe da Galva recebe e responde.</p>
-      <div id="erroSug" class="alert alert-e oculto"></div>
-      <div class="fg"><label class="fl">Assunto <span class="req">*</span></label><input type="text" class="fi" id="sAssunto" placeholder="Assunto da sugestão" oninput="validarSug()"></div>
-      <div class="fg"><label class="fl">Sugestão <span class="req">*</span></label><textarea class="fi" id="sTexto" rows="3" placeholder="Escreva sua sugestão" oninput="validarSug()"></textarea></div>
-      <button class="btn btn-g" id="btnSug" onclick="enviarSugestao()" disabled>Enviar sugestão</button>
+      <div id="erroSug" class="alert alert-e oculto" role="alert"></div>
+      <div class="fg">
+        <label class="fl" for="sAssunto">Assunto <span class="req">*</span></label>
+        <input type="text" class="fi" id="sAssunto" placeholder="Assunto da sugestão" oninput="validarSug()">
+      </div>
+      <div class="fg">
+        <label class="fl" for="sTexto">Sugestão <span class="req">*</span></label>
+        <textarea class="fi" id="sTexto" rows="3" placeholder="Escreva sua sugestão" oninput="validarSug()"></textarea>
+      </div>
+      <div class="acoes">
+        <button type="button" class="btn btn-g" id="btnSug" onclick="enviarSugestao()" disabled>Enviar sugestão</button>
+      </div>
     </div>
 
-    <!-- FORMULÁRIO DO CLIENTE -->
+    <!-- FORMULÁRIO DE RESPOSTA DO CLIENTE (preencher RNC) -->
     <div class="card" id="cardForm" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+      <div class="form-topo">
         <h3 style="margin:0" id="formTitulo">Preencher RNC</h3>
-        <button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:12px" onclick="fecharForm()">← Voltar</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="fecharForm()">← Voltar</button>
       </div>
-      <div class="progresso"><i id="progBarra"></i></div>
-      <p style="font-size:12px;color:#fbbf24;margin-bottom:14px" id="instrucao">Preencha todos os campos abaixo. O envio só é liberado quando estiver tudo preenchido.</p>
+      <div class="progresso" aria-hidden="true"><i id="progBarra"></i></div>
+      <p class="instrucao" id="instrucao">Preencha todos os campos abaixo. O envio só é liberado quando estiver tudo preenchido.</p>
 
-      <h3 style="color:#93c5fd">Dados preenchidos pela Galva</h3>
+      <h3 class="titulo-claro">Dados preenchidos pela Galva</h3>
       <div class="rosto" id="dadosInternos" style="margin-bottom:18px"></div>
 
       <div class="sep"></div>
       <h3>Preenchimento do cliente</h3>
-      <div id="erroForm" class="alert alert-e oculto"></div>
-      <div class="fg"><label class="fl">Material <span class="req">*</span></label><input type="text" class="fi" id="fMaterial_2" placeholder="Produto / material do lote" oninput="validar()"></div>
-      <div class="fg"><label class="fl">Descrição <span class="req">*</span></label><textarea class="fi" id="fDescricao_2" rows="3" placeholder="Descreva a não conformidade encontrada" oninput="validar()"></textarea></div>
-            <div class="grid g2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fg"><label class="fl">Quantidade (KG) <span class="req">*</span></label><input type="number" class="fi" id="fQtd_2" min="1" step="1" placeholder="0" oninput="validar()"></div>
-        <div class="fg"><label class="fl">Nº da Nota Fiscal</label><input type="text" class="fi" id="fNf_2" placeholder="Número da nota fiscal" oninput="validar()"></div>
+      <div id="erroForm" class="alert alert-e oculto" role="alert"></div>
+      <div class="fg">
+        <label class="fl" for="fMaterial_2">Material <span class="req">*</span></label>
+        <input type="text" class="fi" id="fMaterial_2" placeholder="Produto / material do lote" oninput="validar()">
       </div>
       <div class="fg">
-        <label class="fl">Anexar Nota Fiscal <span class="req">*</span></label>
-        <input type="file" class="fi" id="fAnexo" accept="image/*,application/pdf" onchange="anexar()" style="padding:9px;font-size:12px">
-        <div style="font-size:11px;color:#64748b;margin-top:6px" id="hintAnexo">Imagem ou PDF, até 600 KB</div>
+        <label class="fl" for="fDescricao_2">Descrição <span class="req">*</span></label>
+        <textarea class="fi" id="fDescricao_2" rows="3" placeholder="Descreva a não conformidade encontrada" oninput="validar()"></textarea>
       </div>
-      <button class="btn" id="btnEnviar" onclick="enviar()" disabled>Enviar RNC</button>
-      <div class="carregando" id="carregando"><div class="spinner"></div><div style="font-size:13px;color:#94a3b8">Enviando...</div></div>
+      <div class="grade">
+        <div class="fg">
+          <label class="fl" for="fQtd_2">Quantidade (KG) <span class="req">*</span></label>
+          <input type="number" class="fi" id="fQtd_2" min="1" step="1" placeholder="0" oninput="validar()">
+        </div>
+        <div class="fg">
+          <label class="fl" for="fNf_2">Nº da Nota Fiscal</label>
+          <input type="text" class="fi" id="fNf_2" placeholder="Número da nota fiscal" oninput="validar()">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl" for="fAnexo">Anexar Nota Fiscal <span class="req">*</span></label>
+        <input type="file" class="fi" id="fAnexo" accept="image/*,application/pdf" onchange="anexar()">
+        <div class="hint" id="hintAnexo">Imagem ou PDF, até 600 KB</div>
+      </div>
+      <div class="acoes">
+        <button type="button" class="btn" id="btnEnviar" onclick="enviar()" disabled>Enviar RNC</button>
+      </div>
+      <div class="carregando" id="carregando">
+        <div class="spinner"></div>
+        <div class="txt">Enviando...</div>
+      </div>
     </div>
 
-  </div>
+  </section>
 
-  <div class="rodape">
-    <div>© <span id="ano"></span> Grupo Galva — Galvanização a Fogo · Guarulhos/SP</div>
-    <div>Os dados preenchidos são registrados em log de auditoria (ISO 9001).</div>
-  </div>
-</div>
+</main>
 
+<!-- RODAPÉ (largura total) -->
+<footer class="rodape">
+  <p class="rodape-destaque">Dúvidas? Fale com a Área da Qualidade ou com o Departamento Comercial (SAC/RNC) do Grupo Galva.</p>
+  <p class="rodape-nota">© <span id="ano"></span> Grupo Galva — Galvanização a Fogo · Guarulhos/SP · Os dados preenchidos são registrados em log de auditoria (ISO 9001).</p>
+</footer>
+
+<!-- Toda a lógica (validação, sessão, envio para a API/Firebase) continua
+     exatamente igual no js/rnc.js — nenhum arquivo de JS foi alterado. -->
 <script src="js/rnc.js" defer></script>
+
+<!-- =============================================================================
+     PORTAL DO CLIENTE (Etapa 2) — carregado DEPOIS do js/rnc.js, que continua
+     100% intacto. Acrescenta: gate de login (Firebase Authentication),
+     wrappers de sair/filial/voltar, CNPJ e razão social travados no
+     formulário e a área "Meus chamados" (só o próprio CNPJ, somente leitura).
+     ========================================================================== -->
+<script src="js/portal-do-cliente.js" defer></script>
+
+<!-- =============================================================================
+     ENHANCEMENTS VISUAIS (não alteram a lógica nem o envio de dados):
+       1) Arrastar e soltar nas áreas de upload — repassa os arquivos para os
+          mesmos inputs e chama as mesmas funções do js/rnc.js.
+       2) Miniatura real nas pré-visualizações das fotos (o JS continua
+          renderizando os chips; aqui só acrescentamos a imagem).
+       Só presentational: se este bloco falhar, a página funciona como antes.
+     ========================================================================== -->
+<script>
+(function(){
+  'use strict';
+
+  /* ---- 1. Arrastar e soltar ------------------------------------------- */
+  function zonaUpload(idZona, idInput, nomeFuncao){
+    var zona=document.getElementById(idZona),
+        input=document.getElementById(idInput);
+    if(!zona||!input)return;
+
+    ['dragenter','dragover'].forEach(function(ev){
+      zona.addEventListener(ev,function(e){
+        e.preventDefault();
+        if(e.dataTransfer)e.dataTransfer.dropEffect='copy';
+        zona.classList.add('drag');
+      });
+    });
+    zona.addEventListener('dragleave',function(e){
+      if(!zona.contains(e.relatedTarget))zona.classList.remove('drag');
+    });
+    zona.addEventListener('drop',function(e){
+      e.preventDefault();
+      zona.classList.remove('drag');
+      var arquivos=e.dataTransfer&&e.dataTransfer.files;
+      if(!arquivos||!arquivos.length)return;
+      try{input.files=arquivos;}catch(err){return}
+      /* mesma função que o onchange do input já chamaria */
+      if(typeof window[nomeFuncao]==='function')window[nomeFuncao](input);
+    });
+  }
+  zonaUpload('dropFotos','fFotos','anexarFotos');
+  zonaUpload('dropDocs','fDocs','anexarDocs');
+
+  /* ---- 2. Miniaturas nas fotos pré-visualizadas ------------------------ */
+  /* O js/rnc.js monta os chips em #previaFotos a partir de cliFotos (let
+     global). Observamos o container e acrescentamos a imagem da miniatura
+     no início de cada chip — sem tocar no código do rnc.js. */
+  function miniaturas(idBox,lerLista){
+    var box=document.getElementById(idBox);
+    if(!box||typeof MutationObserver==='undefined')return;
+    var obs=new MutationObserver(function(){
+      var lista=[];
+      try{lista=lerLista()||[]}catch(err){return} /* rnc.js ainda não carregou */
+      Array.prototype.forEach.call(box.children,function(chip,i){
+        if(chip.dataset&&chip.dataset.thumb==='1')return;
+        if(chip.dataset)chip.dataset.thumb='1';
+        var item=lista[i];
+        if(item&&item.data){
+          var img=document.createElement('img');
+          img.src=item.data;
+          img.alt='';
+          chip.insertBefore(img,chip.firstChild);
+        }
+      });
+    });
+    obs.observe(box,{childList:true});
+  }
+  miniaturas('previaFotos',function(){return cliFotos});
+})();
+</script>
+
 </body>
 </html>

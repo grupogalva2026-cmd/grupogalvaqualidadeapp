@@ -3,153 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Galvabras · Qualidade - App Desktop</title>
-<link rel="icon" href="assets/logo_sistema.png" type="image/png">
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;overflow:hidden;background:#0f172a;font-family:'DM Sans',sans-serif}
-  .app-bar{position:fixed;top:0;left:0;right:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#1e293b;color:#fff;font-size:13px;z-index:1000;border-bottom:1px solid #334155}
-  .app-bar .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.3px}
-  .app-bar .brand img{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:9px;padding:3px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
-  .app-bar .brand span{font-size:15px}
-  .app-bar .status{display:flex;align-items:center;gap:10px;font-size:12px}
-  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-  .dot.online{background:#22c55e;box-shadow:0 0 8px #22c55e}
-  .dot.offline{background:#ef4444;box-shadow:0 0 8px #ef4444}
-  .dot.syncing{background:#eab308;box-shadow:0 0 8px #eab308;animation:pulse 1.5s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-  #view{padding-top:66px;width:100%;height:calc(100vh - 66px);background:#fff}
-  iframe#appFrame{width:100%;height:100%;border:none;display:block}
-  #loader{position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
-  #loader.hidden{display:none!important}
-  #loader .logo-loader{width:260px;height:auto;margin-bottom:14px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.45))}
-  #loader .splash-brand{font-size:13px;font-weight:700;letter-spacing:.22em;color:#94a3b8;margin-bottom:8px}
-  #loader .splash-title{font-size:17px;font-weight:600;color:#e2e8f0;margin-bottom:24px}
-  .splash-progress{width:min(360px,80vw)}
-  .splash-progress-head{display:flex;justify-content:space-between;font-size:13px;color:#94a3b8;margin-bottom:8px}
-  .splash-progress-head b{color:#60a5fa}
-  .splash-bar{height:10px;background:#1e293b;border-radius:999px;overflow:hidden;border:1px solid #334155}
-  .splash-fill{height:100%;width:0;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:999px;transition:width .3s ease}
-  .hidden{display:none}
-</style>
-</head>
-<body>
-<div class="app-bar">
-  <div class="brand">
-    <img src="assets/logo_sistema.png" alt="Grupo Galva">
-    <span>Galvabras · Qualidade</span>
-  </div>
-  <div class="status">
-    <span class="dot" id="statusDot" class="offline"></span>
-    <span id="statusText">Iniciando…</span>
-    <span id="apiText">API: verificando…</span>
-    <span id="appText">v1.1.0</span>
-  </div>
-</div>
+<title>Área do Cliente · Entrar | Grupo Galva</title>
+<meta name="description" content="Entre na Área do Cliente do Grupo Galva (Galvabras) para abrir e acompanhar reclamações e RNC.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0A1F44">
+<link rel="icon" href="assets/logogrupo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/public-rnc.css">
+<link rel="stylesheet" href="css/a11y.css?v=20261021b">
 
-<div id="loader">
-  <img src="assets/logo_sistema.png" alt="Grupo Galva" class="logo-loader">
-  <div class="splash-brand">GRUPO GALVA</div>
-  <div class="splash-title">Iniciando sistema Qualidade…</div>
-  <div class="splash-progress">
-    <div class="splash-progress-head"><span id="splashMsg">Carregando interface…</span><b id="splashPct">0%</b></div>
-    <div class="splash-bar"><div class="splash-fill" id="splashFill"></div></div>
-  </div>
-</div>
-
-<div id="view">
-  <iframe id="appFrame" src="login-qualidade.html" style="width:100%;height:100%;border:none;display:block"></iframe>
-</div>
-
+<!-- =============================================================================
+     GATE: quem já está logado (sessão válida do portal) pula direto
+     para o rnc.html. Preserva a query string (ex.: ?rnc=TOKEN) para o
+     link de preenchimento de RNC continuar funcionando após o login.
+     ========================================================================== -->
 <script>
 (function(){
-  'use strict';
-  console.log('[Shell] script shell iniciado');
-  const API_BASE = location.origin;
-  const statusDot = document.getElementById('statusDot');
-  const statusText = document.getElementById('statusText');
-  const apiText = document.getElementById('apiText');
-  const loader = document.getElementById('loader');
-  const frame = document.getElementById('appFrame');
-  const splashFill = document.getElementById('splashFill');
-  const splashPct = document.getElementById('splashPct');
-  const splashMsg = document.getElementById('splashMsg');
-
-  let splashPctVal = 0;
-  const splashTimer = setInterval(()=>{
-    if(splashPctVal < 90){
-      splashPctVal += splashPctVal < 30 ? 8 : 4;
-      if(splashPctVal > 90) splashPctVal = 90;
-      if(splashFill) splashFill.style.width = splashPctVal + '%';
-      if(splashPct) splashPct.textContent = splashPctVal + '%';
-      if(splashMsg) splashMsg.textContent = splashPctVal < 30 ? 'Carregando interface…' : (splashPctVal < 60 ? 'Verificando conexão…' : 'Preparando sistema…');
-    }
-  }, 200);
-
-  function splashFinish(msg){
-    clearInterval(splashTimer);
-    if(splashFill) splashFill.style.width = '100%';
-    if(splashPct) splashPct.textContent = '100%';
-    if(splashMsg) splashMsg.textContent = msg || 'Pronto!';
-  }
-
-  function setStatus(online, syncing){
-    if(syncing){
-      statusDot.className = 'dot syncing';
-      statusText.textContent = 'Sincronizando…';
-    } else if(online){
-      statusDot.className = 'dot online';
-      statusText.textContent = 'Online · Sincronizado';
-    } else {
-      statusDot.className = 'dot offline';
-      statusText.textContent = 'Offline · Trabalhando localmente';
-    }
-  }
-
-  setStatus(navigator.onLine, false);
-  window.addEventListener('online', ()=>setStatus(true,false));
-  window.addEventListener('offline', ()=>setStatus(false,false));
-
-  function hideLoader(){
-    splashFinish('Pronto!');
-    if(loader){loader.style.setProperty('display','none','important');}
-    console.log('[Shell] hideLoader executado');
-  }
-
-  async function checkApi(){
-    try{
-      const r = await fetch(API_BASE + '/api/health', {method:'GET', mode:'cors', headers:{'Cache-Control':'no-cache'}, signal: AbortSignal.timeout(8000)});
-      apiText.textContent = 'API: online';
-      setStatus(true, false);
-      console.log('[Shell] API health OK, status:', r.status);
-    } catch(e){
-      apiText.textContent = 'API: indisponível';
-      setStatus(false, false);
-      console.log('[Shell] API health FALHOU:', e && e.message);
-    }
-  }
-
-  checkApi();
-
-  // Timeout de seguranÁa: esconde o loader no mŠximo depois de 5 segundos
-  setTimeout(hideLoader, 5000);
-  console.log('[Shell] timeout de 5s agendado');
-
-  // Esconde o loader assim que o iframe terminar de carregar
-  frame.addEventListener('load', function(){
-    console.log('[Shell] iframe carregado:', frame.src);
-    hideLoader();
-    try{
-      const src = frame.src || '';
-      if(src.indexOf('login-cliente') !== -1){
-        frame.src = 'login-qualidade.html';
-      }
-    }catch(e){}
-  });
-
-  // VerificaÁ„o periÛdica da API
-  setInterval(checkApi, 60000);
+  try{
+    var s=JSON.parse(localStorage.getItem('gv_cliente_rnc')||'null');
+    if(s&&s.exp&&s.exp>Date.now()){location.replace('rnc.html'+location.search);}
+  }catch(e){}
 })();
 </script>
+</head>
+<body>
+
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+<!-- ===================== CABEÇALHO (mesmo visual do rnc.html) ===================== -->
+<header class="topo">
+  <div class="topo-marca">
+    <span class="logo-chip">
+      <img src="assets/logogrupo-transparente.png" alt="Grupo Galva"
+           onerror="this.onerror=null;this.src='assets/logo-grupo-galva.svg'">
+    </span>
+    <div class="topo-titulos">
+      <div class="topo-titulo">Área do Cliente</div>
+      <div class="marca">Galvabras · Galvanização a Fogo</div>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="conteudo">
+
+  <div class="hero">
+    <span class="badge b-i">ÁREA DO CLIENTE</span>
+    <h1>Entre na sua conta</h1>
+    <p>Informe o CNPJ e a senha da sua empresa para abrir reclamações (SAC/RNC) e acompanhar seus chamados.</p>
+  </div>
+
+  <!-- ===================== CARTÃO DE LOGIN ===================== -->
+  <div class="card card-login">
+    <!-- Mensagens amigáveis de erro (CNPJ/senha, acesso desativado...) -->
+    <div id="loginErro" class="alert alert-e oculto" role="alert"></div>
+
+    <form id="formLogin" autocomplete="on" onsubmit="entrar();return false;">
+
+      <!-- CNPJ (máscara 00.000.000/0000-00) -->
+      <div class="fg">
+        <label class="fl" for="cCnpj">CNPJ <span class="req">*</span></label>
+        <div class="inp-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="6" y1="10" x2="12" y2="10"/><line x1="6" y1="14" x2="10" y2="14"/></svg>
+          <input type="text" class="fi" id="cCnpj" placeholder="00.000.000/0000-00"
+                 inputmode="numeric" maxlength="18" autocomplete="username"
+                 oninput="maskCnpj(this)"
+                 onpaste="setTimeout(function(){maskCnpj(document.getElementById('cCnpj'))},0)">
+        </div>
+      </div>
+
+      <!-- Senha com botão mostrar/ocultar -->
+      <div class="fg">
+        <label class="fl" for="lSenha">Senha <span class="req">*</span></label>
+        <div class="pw">
+          <input type="password" class="fi" id="lSenha" placeholder="Digite a senha da sua empresa"
+                 autocomplete="current-password">
+          <button type="button" class="olho" id="btnOlho"
+                  onclick="alternarSenha()" aria-label="Mostrar senha" title="Mostrar senha">👁</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" id="btnEntrar" onclick="entrar();return false;">Entrar</button>
+      <div class="carregando" id="carregandoLogin">
+        <div class="spinner"></div>
+        <div class="txt">Verificando acesso...</div>
+      </div>
+    </form>
+
+    <div class="sep"></div>
+    <p class="help" style="text-align:center">Esqueceu a senha ou ainda não tem acesso? Fale com a <b>Área da Qualidade</b> ou com o <b>Departamento Comercial (SAC/RNC)</b> do Grupo Galva — o acesso é liberado pela Galva.</p>
+    <p class="help" style="text-align:center;margin-top:8px">Após entrar você poderá <b>abrir sua reclamação</b> e <b>acompanhar o status</b> dos seus chamados.</p>
+  </div>
+
+</main>
+
+<!-- RODAPÉ (mesmo texto do rnc.html) -->
+<footer class="rodape">
+  <p class="rodape-destaque">Dúvidas? Fale com a Área da Qualidade ou com o Departamento Comercial (SAC/RNC) do Grupo Galva.</p>
+  <p class="rodape-nota">© <span id="ano"></span> Grupo Galva — Galvanização a Fogo · Guarulhos/SP · Os dados preenchidos são registrados em log de auditoria (ISO 9001).</p>
+</footer>
+
+<!-- Firebase Authentication (SDK público — a apiKey é configuração pública, não é segredo) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js" defer></script>
+<!-- Lógica da tela de login (CNPJ → e-mail interno, mensagens amigáveis, sessão) -->
+<script src="js/login-cliente.js" defer></script>
+
 </body>
 </html>

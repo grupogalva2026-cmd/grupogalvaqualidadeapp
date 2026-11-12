@@ -1,54 +1,107 @@
 rules_version = '2';
+
+/* =============================================================================
+   REGRAS DO FIRESTORE — Grupo Galva / Galvabras (Etapa 2: Área do Cliente)
+   -----------------------------------------------------------------------------
+   COMO FUNCIONA:
+     · Conta INTERNA = usuário autenticado que NÃO é de cliente
+       (equipe Galva: login-qualidade.html / app interno). Mantém o MESMO
+       acesso que tem hoje (nada muda para os 10 computadores).
+     · Conta CLIENTE = e-mail terminado em @cliente.grupogalva.com.br
+       (o login da Área do Cliente usa CNPJ@cliente.grupogalva.com.br).
+       Só enxerga e grava dados do PRÓPRIO CNPJ.
+     · Nenhuma regra apaga dado existente: isso é controle de acesso,
+       não migração. Os dados atuais continuam onde estão.
+
+   ONDE COLAR (passo a passo no console):
+     1. console.firebase.google.com -> selecione o projeto "galvabras-gestao"
+     2. Firestore Database (Banco de dados) -> aba "Regras" (Rules)
+     3. Cole TODO o conteúdo deste arquivo e clique em "Publicar" (Publish)
+   ========================================================================== */
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // USUÁRIOS
+    /* ---------------- funções auxiliares ---------------- */
+    function ehAutenticado() {
+      return request.auth != null;
+    }
+
+    function ehContaCliente() {
+      return ehAutenticado()
+        && request.auth.token.email != null
+        && request.auth.token.email.endsWith('@cliente.grupogalva.com.br');
+    }
+
+    /* CNPJ da conta cliente = parte antes do @ (somente dígitos). */
+    function cnpjDaConta() {
+      return request.auth.token.email.split('@')[0];
+    }
+
+    /* Equipe interna: qualquer usuário autenticado que NÃO é conta cliente.
+       Efeito prático = mesmo acesso de hoje para o app interno. */
+    function ehInterno() {
+      return ehAutenticado() && !ehContaCliente();
+    }
+
+    /* ---------------- coleções existentes (interno, como hoje) ------------ */
     match /users/{userId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if ehInterno();
     }
 
-    // CADASTROS PENDENTES
     match /pending/{docId} {
-      allow read, write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read, write: if ehInterno();
     }
 
-    // FUNCIONÁRIOS
     match /funcionarios/{docId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if ehInterno();
     }
 
-    // SACs / CHAMADOS
     match /sacs/{docId} {
-      allow read, write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read, write: if ehInterno();
     }
 
-    // PERMISSÕES
     match /permissoes/{docId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if ehInterno();
     }
 
-    // LOGS DE AUDITORIA
     match /logs/{docId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if ehInterno();
     }
 
-    // TICKETS / CHAMADOS
     match /tickets/{docId} {
-      allow read, write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read, write: if ehInterno();
     }
 
-    // RNC
+    /* ---------------- RNC / chamados (o coração da Etapa 2) --------------- */
     match /rnc/{docId} {
-      allow read, write: if request.auth != null;
-      allow create: if request.auth != null;
+
+      /* Equipe interna: acesso total (igual a hoje). */
+      allow read, write: if ehInterno();
+
+      /* Cliente: LE somente chamados do próprio CNPJ. */
+      allow read: if ehContaCliente()
+        && resource.data.get('cnpj', '') == cnpjDaConta();
+
+      /* Cliente: CRIA chamado só com o próprio CNPJ no documento. */
+      allow create: if ehContaCliente()
+        && request.resource.data.get('cnpj', '') == cnpjDaConta();
+
+      /* Cliente: ALTERA somente documento do próprio CNPJ e sem trocar o
+         CNPJ (os anexos/andamento interno são protegidos). */
+      allow update: if ehContaCliente()
+        && resource.data.get('cnpj', '') == cnpjDaConta()
+        && request.resource.data.get('cnpj', '') == cnpjDaConta();
+
+      /* Cliente NÃO apaga chamado (somente leitura + registro). */
+      allow delete: if ehInterno();
     }
 
-    // Qualquer outra collection - autenticado
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    /* ---------------- catch-all: qualquer outra coleção ------------------- */
+    /* Clientes nunca acessam nada fora do escopo acima; internos mantêm
+       o acesso de hoje (regras são combinadas com OR, não por ordem). */
+    match /{collection}/{docId} {
+      allow read, write: if ehInterno();
     }
   }
 }

@@ -1,0 +1,62 @@
+rules_version = '2';
+
+/* =============================================================================
+   REGRAS DO CLOUD STORAGE — Grupo Galva / Galvabras (Etapa 2)
+   -----------------------------------------------------------------------------
+   COMO FUNCIONA:
+     · Conta CLIENTE (@cliente.grupogalva.com.br) só enxerga e grava na
+       pasta PRÓPRIA: /clientes/{seu-cnpj}/...
+     · Equipe interna (qualquer outro usuário autenticado) mantém acesso
+       total, igual ao de hoje.
+     · O Storage hoje não é usado pelo app interno (que usa RTDB/Firestore
+       via API), então publicar estas regras NÃO quebra nada nem apaga dado.
+
+   ONDE COLAR (passo a passo no console):
+     1. console.firebase.google.com -> projeto "galvabras-gestao"
+     2. Storage -> aba "Regras" (Rules)
+     3. Cole TODO o conteúdo deste arquivo e clique em "Publicar" (Publish)
+        (Se o Storage ainda não estiver ativado, clique em "Começar" e
+        escolha o modo de segurança "Produção" e depois cole as regras.)
+   ========================================================================== */
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    /* ---------------- funções auxiliares ---------------- */
+    function ehAutenticado() {
+      return request.auth != null;
+    }
+
+    function ehContaCliente() {
+      return ehAutenticado()
+        && request.auth.token.email != null
+        && request.auth.token.email.endsWith('@cliente.grupogalva.com.br');
+    }
+
+    function cnpjDaConta() {
+      return request.auth.token.email.split('@')[0];
+    }
+
+    function ehInterno() {
+      return ehAutenticado() && !ehContaCliente();
+    }
+
+    /* ---------------- pasta do cliente: só o próprio CNPJ ----------------- */
+    match /clientes/{cnpj}/{arquivo=**} {
+      /* Leitura: só a própria pasta. */
+      allow read: if ehContaCliente() && cnpj == cnpjDaConta();
+
+      /* Gravação: só a própria pasta, arquivo de até 6 MB
+         (fotos comprimidas do portal ficam bem abaixo disso). */
+      allow write: if ehContaCliente()
+        && cnpj == cnpjDaConta()
+        && request.resource.size < 6 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*|application/pdf|text/xml|application/xml');
+    }
+
+    /* ---------------- todo o resto: só equipe interna --------------------- */
+    match /{caminho=**} {
+      allow read, write: if ehInterno();
+    }
+  }
+}
