@@ -304,12 +304,6 @@ export default async function handler(req, res) {
       const openIssues = listaDe(leOpenIssues);
       const clientesSnap = listaDe(leClientes);
 
-      const rtLeiturasFalharam = [leSignLinks, leRncNotifs, leOpenIssues, leClientes]
-        .some((x) => !x.ok);
-      const rtdbDiagnostico = rtLeiturasFalharam
-        ? { ok: false, erro: 'leituras RTDB com timeout ou erro de rede' }
-        : null;
-
       /* Cliente do CNPJ (SEM expor hash de senha). */
       const bruto = clientesSnap.find(meu) || null;
       const cliente = bruto
@@ -330,9 +324,7 @@ export default async function handler(req, res) {
       });
       const rncs = docs.map((d) => ({ id: d.id, ...d.data() }));
 
-      const corpo = { ok: true, cliente, links, notifs, oi, openIssues: oi, rncs };
-      if (rtdbDiagnostico) corpo._diag = rtdbDiagnostico;
-      res.status(200).json(corpo);
+      res.status(200).json({ ok: true, cliente, links, notifs, oi, openIssues: oi, rncs });
     }
   } catch (e) {
     res.status(500).json({ error: e.message });
