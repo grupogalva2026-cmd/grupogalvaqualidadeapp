@@ -4,47 +4,24 @@
    Este arquivo é carregado DEPOIS do js/rnc.js (nenhuma linha do rnc.js
    foi alterada) e acrescenta, sem quebrar nada o que já existia:
 
-   1) GATE DE LOGIN: verifica a sessão do portal + Firebase Authentication
-      e manda de volta para o index.html (tela de login) se não houver
-      login. Preserva a query string (?rnc=TOKEN) nos redirecionamentos.
-   2) WRAPPERS: envolve sair/carregar/escolherFilial/voltarParaCnpj com
-      o comportamento original + o que é novo (signOut, filial gravada,
-      voltar para a área em vez da tela 1).
+   1) GATE DE LOGIN: verifica a sessão do portal (localStorage
+      'gv_cliente_rnc', gravada pelo login do index.html via
+      /api/login-cliente) e manda de volta para o index.html se não
+      houver login. Preserva a query string (?rnc=TOKEN) nos redirecionamentos.
+   2) WRAPPERS: envolve escolherFilial/carregar/voltarParaCnpj com o
+      comportamento original + o que é novo (filial gravada na sessão,
+      repintar "Meus chamados" a cada atualização, voltar para a área
+      em vez da tela 1).
    3) FORMULÁRIO PÓS-LOGIN: CNPJ e razão social preenchidos e travados.
-   4) "MEUS CHAMADOS": lista somente os chamados (tipo 'occ') do próprio
-      CNPJ, com status, data e número — somente leitura.
-      Leitura direta no Firestore (where cnpj == meuCNPJ), fallback para
-      a API /api/rnc se o Firestore não estiver disponível.
+   4) "MEUS CHAMADOS": leitura via GET /api/rnc?cnpj= (o servidor já
+      devolve somente os dados do próprio CNPJ) — somente chamados de
+      abertura (tipo 'occ'), somente leitura.
    ===================================================================== */
 
 (function () {
   'use strict';
 
-  const DOMINIO_CLIENTE = '@cliente.grupogalva.com.br';
   const SESSAO_TTL_MS = 12 * 60 * 60 * 1000;
-
-  /* ---------------- Firebase (mesmo projeto do app interno) ------------ */
-  let fbAuth = null, fbDb = null;
-  try {
-    if (typeof firebase !== 'undefined') {
-      if (!firebase.apps.length) {
-        firebase.initializeApp({
-          apiKey: 'AIzaSyBF5wH5ZNzA2JKQSGOopakpKF1LvahvKCY',
-          authDomain: 'galvabras-gestao.firebaseapp.com',
-          projectId: 'galvabras-gestao',
-          storageBucket: 'galvabras-gestao.appspot.com',
-          messagingSenderId: '1054843464047',
-          appId: '1:1054843464047:web:2c0647902727d31902e0b2'
-        });
-      }
-      if (firebase.apps.length) {
-        fbAuth = firebase.auth();
-        fbDb = firebase.firestore();
-      }
-    }
-  } catch (e) {
-    console.warn('Firebase indisponível (modo degradado):', e);
-  }
 
   /* ---------------- utilidades de sessão ---------------- */
   const soDigitos = (v) => String(v || '').replace(/\D/g, '');
@@ -61,68 +38,12 @@
     location.replace('index.html' + location.search);
   }
 
-  function cnpjDaConta(user) {
-    /* 12345678000199@cliente.grupogalva.com.br -> 12345678000199 */
-    const email = String((user && user.email) || '').toLowerCase();
-    return email.endsWith(DOMINIO_CLIENTE) ? email.slice(0, -DOMINIO_CLIENTE.length) : '';
-  }
-
   /* ---------------- 1) GATE DE LOGIN ---------------------------------- */
   (function gate() {
-    const s = sessaoPortal();
-    if (!s) { irParaLogin(); return; }
-
-    if (!fbAuth) {
-      /* Firebase/Sem rede: modo degradado — a marcação local do portal
-         (gravada só após login real) é aceita. */
-      return;
-    }
-
-    let resolvido = false;
-    try {
-      const off = fbAuth.onAuthStateChanged(function (user) {
-        if (resolvido) return;
-        resolvido = true;
-        try { off(); } catch (e) {}
-        if (!user) { irParaLogin(); return; }
-        const cnpjConta = cnpjDaConta(user);
-        if (cnpjConta && cnpjConta !== soDigitos(s.cnpj)) {
-          /* Logado com outra conta: encerra e volta para o login. */
-          fbAuth.signOut().catch(function () {});
-          irParaLogin();
-        }
-        /* OK: permanece na página. */
-      }, function () {
-        /* Erro ao ler a sessão Firebase: não bloqueia o cliente. */
-        resolvido = true;
-      });
-    } catch (e) { resolvido = true; }
-
-    /* Fallback: se o Firebase não responder em 6s (SDK/cdn fora), deixa
-       a sessão local do portal seguir (login já foi feito para existir). */
-    setTimeout(function () {
-      if (!resolvido) { resolvido = true; try { off && off(); } catch (e) {} }
-    }, 6000);
+    if (!sessaoPortal()) irParaLogin();
   })();
 
   /* ---------------- 2) WRAPPERS (comportamento original preservado) ---- */
-
-  /* Sair: encerra também a sessão do Firebase Authentication. */
-  if (typeof window.sair === 'function' && !window.sair.__gvPortal) {
-    const origSair = window.sair;
-    const novaSair = function () {
-      let foi = false;
-      const ir = function () { if (foi) return; foi = true; origSair(); };
-      if (fbAuth) {
-        try {
-          fbAuth.signOut().then(ir, ir);
-          setTimeout(ir, 900); /* nunca deixa o cliente esperando */
-        } catch (e) { ir(); }
-      } else { ir(); }
-    };
-    novaSair.__gvPortal = true;
-    window.sair = novaSair;
-  }
 
   /* Filial: além do ORIGINAL (marcar o chip), grava a escolha na sessão
      para o envio do chamado usar a filial certa. */
@@ -144,12 +65,20 @@
     window.escolherFilial = novaFilial;
   }
 
-  /* Atualizar: após o ORIGINAL carregar, re-renderiza "Meus chamados". */
+  /* Atualizar: após o ORIGINAL carregar (também roda a cada 30s), o db
+     já vem escopado ao CNPJ — repinta "Meus chamados" com esses dados. */
   if (typeof window.carregar === 'function' && !window.carregar.__gvPortal) {
     const origCarregar = window.carregar;
     const novoCarregar = function () {
       const r = origCarregar.apply(this, arguments);
-      const segue = function () { try { renderMeusChamados(); } catch (e) {} };
+      const segue = function () {
+        try {
+          if (typeof db !== 'undefined' && db && Array.isArray(db.rncs)) {
+            chamadosCache = db.rncs;
+          }
+          renderMeusChamados();
+        } catch (e) {}
+      };
       if (r && typeof r.then === 'function') r.then(segue, segue);
       else segue();
       return r;
@@ -159,13 +88,14 @@
   }
 
   /* Voltar (do formulário): em vez da antiga tela 1 (CNPJ editável),
-     volta para a Área do Cliente logado. */
+     volta para a Área do Cliente logada. */
   if (typeof window.voltarParaCnpj === 'function' && !window.voltarParaCnpj.__gvPortal) {
     const novaVoltar = function () {
       const f = document.getElementById('paginaFormulario');
       const a = document.getElementById('paginaArea');
       if (f) f.classList.add('oculto');
       if (a) a.classList.remove('oculto');
+      try { renderMeusChamados(); } catch (e) {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     novaVoltar.__gvPortal = true;
@@ -204,7 +134,7 @@
       vis.classList.add('travado');
     }
 
-    /* Razão social preenchida e travada (vem do login/display name). */
+    /* Razão social preenchida e travada (vem do cadastro de acesso). */
     const cli = document.getElementById('fCliente');
     const razao = (s && s.razaoSocial) ? String(s.razaoSocial).trim() : '';
     if (cli) {
@@ -214,8 +144,8 @@
         cli.classList.add('travado');
         cli.title = 'Razão social vinda do seu cadastro de acesso';
       } else {
-        /* Cadastro sem razão social: deixa o cliente informar (evita
-           formulário travado sem valor). */
+         /* Cadastro sem razão social: deixa o cliente informar (evita
+            formulário travado sem valor). */
         cli.placeholder = 'Informe a razão social da empresa';
       }
     }
@@ -232,7 +162,7 @@
     aplicarFilial(s.filial || 'SP');
   })();
 
-  /* ---------------- 4) MEUS CHAMADOS (Firestore, só o próprio CNPJ) ---- */
+  /* ---------------- 4) MEUS CHAMADOS (API escopada ao CNPJ) ----------- */
 
   let chamadosCache = [];
 
@@ -271,11 +201,11 @@
     if (!cnpj) return;
 
     /* Só chamados de abertura (tipo 'occ') e SOMENTE do próprio CNPJ. */
-    let lista = chamadosCache.filter(function (d) {
+    let lista = (Array.isArray(chamadosCache) ? chamadosCache : []).filter(function (d) {
       return soDigitos(d.cnpj) === cnpj && String(d.tipo || 'occ') === 'occ';
     });
 
-    /* Fallback: dados da API (já escopados/filtrados por CNPJ aqui). */
+    /* Fallback: dados do carregar() (já escopados ao CNPJ pelo servidor). */
     if (!lista.length && typeof db !== 'undefined' && db && Array.isArray(db.rncs)) {
       lista = db.rncs.filter(function (d) {
         return soDigitos(d.cnpj) === cnpj && String(d.tipo || 'occ') === 'occ';
@@ -304,31 +234,20 @@
     }).join('');
   }
 
-  /* Assinatura ao vivo do Firestore: where('cnpj','==',meuCNPJ) — índice
-     de campo simples (não exige índice composto). */
-  (function assinarChamados() {
+  /* Busca inicial na API (escopada ao CNPJ no servidor). */
+  async function atualizarMeusChamados() {
     const s = sessaoPortal();
-    if (!s || !fbDb) return;
+    if (!s) return;
     try {
-      fbDb.collection('rnc')
-        .where('cnpj', '==', soDigitos(s.cnpj))
-        .limit(100)
-        .onSnapshot(function (snap) {
-          chamadosCache = [];
-          snap.forEach(function (doc) {
-            const d = doc.data() || {};
-            d._docId = doc.id;
-            chamadosCache.push(d);
-          });
-          renderMeusChamados();
-        }, function () {
-          /* Sem permissão/conexão: fica o fallback da API. */
-          renderMeusChamados();
-        });
-    } catch (e) { /* modo degradado: fallback da API */ }
-  })();
+      const r = await fetch('/api/rnc?cnpj=' + encodeURIComponent(soDigitos(s.cnpj)), { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      if (d && Array.isArray(d.rncs)) chamadosCache = d.rncs;
+    } catch (e) { /* sem rede: fica o cache/db.rncs */ }
+    try { renderMeusChamados(); } catch (e) {}
+  }
 
-  /* Primeira pintura (o snapshot assíncrono repinta depois). */
-  renderMeusChamados();
+  /* Primeira pintura. */
+  atualizarMeusChamados();
 
 })();

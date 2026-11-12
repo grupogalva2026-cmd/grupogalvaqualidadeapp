@@ -2,36 +2,16 @@
    LOGIN DA ÁREA DO CLIENTE (index.html)
    ---------------------------------------------------------------------
    - CNPJ com máscara 00.000.000/0000-00 e validação de dígitos verificadores.
-   - O CNPJ é convertido em um e-mail interno invisível para o cliente:
-        12345678000199  ->  12345678000199@cliente.grupogalva.com.br
-   - Autenticação via Firebase Authentication (e-mail/senha).
+   - Autenticação via API do servidor: POST /api/login-cliente valida
+     CNPJ + senha na base de clientes do Firebase (galvabras/data/clientes)
+     — a MESMA base que o app interno cadastra e sincroniza. Se o CNPJ
+     ainda não existir, o próprio servidor cria o registro (1º acesso).
    - Sessão do portal gravada em localStorage['gv_cliente_rnc']
      (mesmo contrato que o rnc.js já espera): {cnpj, razaoSocial, filial, exp}.
    - Mensagens amigáveis (CNPJ/senha incorretos, acesso desativado...).
    ===================================================================== */
 
-const DOMINIO_CLIENTE = '@cliente.grupogalva.com.br';
 const SESSAO_TTL_MS = 12 * 60 * 60 * 1000; // 12 horas
-
-let fbApp = null, fbAuth = null;
-try {
-  if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp({
-      apiKey: 'AIzaSyBF5wH5ZNzA2JKQSGOopakpKF1LvahvKCY',
-      authDomain: 'galvabras-gestao.firebaseapp.com',
-      projectId: 'galvabras-gestao',
-      storageBucket: 'galvabras-gestao.appspot.com',
-      messagingSenderId: '1054843464047',
-      appId: '1:1054843464047:web:2c0647902727d31902e0b2'
-    });
-  }
-  if (typeof firebase !== 'undefined' && firebase.apps.length) {
-    fbApp = firebase.app();
-    fbAuth = firebase.auth();
-  }
-} catch (e) {
-  console.warn('Firebase indisponível (login offline):', e);
-}
 
 /* ---------------- utilidades ---------------- */
 
@@ -66,13 +46,6 @@ function cnpjValido(str) {
          calc(c.slice(0, 13)) === parseInt(c[13], 10);
 }
 
-function cnpjFmt(c) {
-  c = soDigitos(c);
-  return c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-}
-
-function emailInterno(cnpj) { return soDigitos(cnpj) + DOMINIO_CLIENTE; }
-
 function mostrarErro(msg) {
   const box = document.getElementById('loginErro');
   if (!box) return;
@@ -88,33 +61,22 @@ function carregando(sim) {
   if (c) c.classList.toggle('on', !!sim); /* .carregando.on{display:block} */
 }
 
-/* Erros do Firebase -> mensagens amigáveis (requisito 6) */
-function msgErroFirebase(code) {
-  switch (code) {
-    case 'auth/user-not-found':
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-    case 'auth/invalid-login-credentials':
-      return 'CNPJ ou senha incorretos. Verifique e tente novamente.';
-    case 'auth/user-disabled':
-      return 'Seu acesso está desativado, fale com a Galva.';
-    case 'auth/too-many-requests':
-      return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
-    case 'auth/network-request-failed':
-      return 'Falha de conexão. Verifique sua internet e tente novamente.';
-    case 'auth/invalid-email':
-      return 'CNPJ ou senha incorretos.';
-    default:
-      return 'Não foi possível entrar. Tente novamente ou fale com a Galva.';
-  }
+/* Erros da API -> mensagens amigáveis (requisito 6) */
+function msgErroApi(status, texto) {
+  if (status === 401) return 'CNPJ ou senha incorretos. Verifique e tente novamente.';
+  if (status === 403) return 'Seu acesso está desativado, fale com a Galva.';
+  if (status === 400 && texto) return texto;
+  if (status === 0) return 'Falha de conexão. Verifique sua internet e tente novamente.';
+  if (texto) return texto;
+  return 'Não foi possível entrar. Tente novamente ou fale com a Galva.';
 }
 
 /* Grava a sessão do portal no formato que o rnc.js já lê */
-function gravarSessaoPortal(cnpj, razaoSocial) {
+function gravarSessaoPortal(cnpj, razaoSocial, filial) {
   const sessao = {
     cnpj: soDigitos(cnpj),
     razaoSocial: razaoSocial || '',
-    filial: 'SP',
+    filial: filial === 'PR' ? 'PR' : 'SP',
     exp: Date.now() + SESSAO_TTL_MS
   };
   try {
@@ -164,37 +126,29 @@ async function entrar() {
     mostrarErro('Digite a senha da sua empresa.');
     return;
   }
-  if (!fbAuth) {
-    mostrarErro('Serviço de login indisponível no momento. Recarregue a página ou fale com a Galva.');
-    return;
-  }
 
   carregando(true);
   try {
-    const cred = await fbAuth.signInWithEmailAndPassword(emailInterno(cnpj), senha);
-    const user = cred && cred.user;
+    const r = await fetch('/api/login-cliente', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cnpj, senha })
+    });
+    let d = null;
+    try { d = await r.json(); } catch (e) { d = null; }
 
-    if (!user) throw { code: 'auth/user-not-found' };
-
-    /* Acesso desativado pelo administrador (auth/user-disabled já é
-       capturado acima; aqui reforçamos caso o usuário exista mas inativo) */
-    if (user.isDisabled) {
-      try { await fbAuth.signOut(); } catch (e) {}
-      mostrarErro('Seu acesso está desativado, fale com a Galva.');
+    if (!r.ok || !d || !d.ok) {
+      mostrarErro(msgErroApi(r.status, d && (d.erro || d.error)));
       return;
     }
 
-    /* Razão social: definida como "Display name" na criação da conta. */
-    const razaoSocial = (user.displayName || '').trim();
-    gravarSessaoPortal(cnpj, razaoSocial);
+    const cli = d.cliente || {};
+    gravarSessaoPortal(cnpj, cli.razaoSocial, cli.filial);
 
     /* Mantém a query string (?rnc=TOKEN etc.) ao ir para o formulário. */
     location.replace('rnc.html' + location.search);
   } catch (e) {
-    const code = (e && (e.code || (e.error && e.error.code))) || '';
-    /* Desativação: tenta sair para não deixar sessão pendurada */
-    if (code === 'auth/user-disabled') { try { await fbAuth.signOut(); } catch (err) {} }
-    mostrarErro(msgErroFirebase(code));
+    mostrarErro(msgErroApi(0));
   } finally {
     carregando(false);
   }
@@ -216,17 +170,5 @@ async function entrar() {
   /* Já tem sessão válida do portal? Pula direto para o formulário. */
   if (sessaoValida()) {
     location.replace('rnc.html' + location.search);
-    return;
-  }
-
-  /* Tem login no Firebase mas sem sessão do portal (ex.: sessão anterior
-     expirada): encerra para forçar novo login com senha. */
-  if (fbAuth) {
-    const off = fbAuth.onAuthStateChanged(function (user) {
-      try { off(); } catch (e) {}
-      if (user && !sessaoValida()) {
-        fbAuth.signOut().catch(function () {});
-      }
-    }, function () {});
   }
 })();

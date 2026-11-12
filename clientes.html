@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro de Clientes · Área da Qualidade | Grupo Galva</title>
+<meta name="description" content="Tela interna da Galva para cadastrar os CNPJ que acessam a Área do Cliente do Grupo Galva.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0A1F44">
+<link rel="icon" href="assets/logogrupo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/public-rnc.css">
+<link rel="stylesheet" href="css/a11y.css?v=20261021b">
+
+<style>
+  /* Trava de sessão: sem token da Galva, só a tela de login aparece. */
+  html.sem-app #telaApp { display: none; }
+  html:not(.sem-app) #telaLogin { display: none; }
+
+  .barra { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .barra h1 { font-size: 26px; margin: 8px 0 4px; }
+  .eu { font-size: 13px; opacity: .75; }
+  .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+
+  .cli-linha {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 12px 14px; margin-bottom: 8px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 10px;
+  }
+  .cli-linha .info { flex: 1; min-width: 210px; }
+  .cli-linha .info b { font-size: 14px; }
+  .cli-linha .sub { font-size: 12px; opacity: .75; margin-top: 2px; }
+  .cli-linha .senhainfo { font-size: 11px; opacity: .65; margin-top: 2px; }
+  .cli-acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .btn-mini {
+    font-size: 12px; font-weight: 600; padding: 7px 11px;
+    border-radius: 8px; border: 1px solid rgba(255,255,255,.16);
+    background: transparent; color: inherit; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-mini:hover { background: rgba(255,255,255,.09); }
+  .btn-mini.destaque { border-color: rgba(52,211,153,.5); color: #34d399; }
+
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 26px;
+    background: #0A1F44; color: #fff; border: 1px solid rgba(255,255,255,.22);
+    padding: 12px 20px; border-radius: 10px; font-size: 14px; z-index: 99;
+    box-shadow: 0 10px 34px rgba(0,0,0,.45); max-width: 90vw; text-align: center;
+  }
+  .toast.oculto { display: none; }
+</style>
+
+<!-- Sessão da Galva: quem não tem token fica só no login. -->
+<script>
+try {
+  if (!localStorage.getItem('gv_cliadm_token')) document.documentElement.className += ' sem-app';
+} catch (e) { document.documentElement.className += ' sem-app'; }
+</script>
+</head>
+<body>
+
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+<!-- ===================== CABEÇALHO (mesmo visual do portal) ===================== -->
+<header class="topo">
+  <div class="topo-marca">
+    <span class="logo-chip">
+      <img src="assets/logogrupo-transparente.png" alt="Grupo Galva"
+           onerror="this.onerror=null;this.src='assets/logo-grupo-galva.svg'">
+    </span>
+    <div class="topo-titulos">
+      <div class="topo-titulo">Cadastro de Clientes</div>
+      <div class="marca">Galvabras · Galvanização a Fogo · Área da Qualidade</div>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="conteudo">
+
+  <!-- ===================== TELA 1: LOGIN DA GALVA ===================== -->
+  <div id="telaLogin">
+    <div class="hero">
+      <span class="badge b-i">ÁREA DA QUALIDADE</span>
+      <h1>Cadastro de clientes</h1>
+      <p>Entre com o seu usuário do sistema (o mesmo do aplicativo) para cadastrar os CNPJ que poderão entrar na Área do Cliente.</p>
+    </div>
+
+    <div class="card card-login">
+      <div id="admErro" class="alert alert-e oculto" role="alert"></div>
+
+      <form onsubmit="admEntrar();return false;">
+        <div class="fg">
+          <label class="fl" for="admLogin">Usuário <span class="req">*</span></label>
+          <input class="fi" id="admLogin" placeholder="E-mail ou RG do sistema"
+                 autocomplete="username" autocapitalize="none">
+        </div>
+
+        <div class="fg">
+          <label class="fl" for="admSenha">Senha <span class="req">*</span></label>
+          <div class="pw">
+            <input type="password" class="fi" id="admSenha" placeholder="Senha do sistema"
+                   autocomplete="current-password">
+            <button type="button" class="olho" id="btnOlhoAdm"
+                    onclick="admOlho()" aria-label="Mostrar senha" title="Mostrar senha">👁</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="btnAdmEntrar">Entrar</button>
+        <div class="carregando" id="carregandoAdm">
+          <div class="spinner"></div>
+          <div class="txt">Verificando acesso...</div>
+        </div>
+      </form>
+
+      <div class="sep"></div>
+      <p class="help" style="text:center">Este acesso é restrito à equipe do Grupo Galva. Os <b>clientes</b> entram pela <a href="index.html">Área do Cliente</a> (CNPJ + senha da empresa).</p>
+    </div>
+  </div>
+
+  <!-- ===================== TELA 2: APLICATIVO ===================== -->
+  <div id="telaApp">
+
+    <div class="barra">
+      <div>
+        <span class="badge b-i">CADASTRO DE CLIENTES</span>
+        <h1>Clientes da Área do Cliente</h1>
+        <div class="eu" id="admQuem">—</div>
+      </div>
+      <button class="btn-mini" onclick="admSair()">Sair</button>
+    </div>
+
+    <div id="admAviso" class="alert alert-i oculto" role="status"></div>
+
+    <!-- ---------- FORMULÁRIO (novo / editar) ---------- -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="ct" style="margin-bottom:12px" id="fTitulo">Novo cliente</div>
+      <form onsubmit="cliSalvar();return false;">
+        <div class="grade">
+          <div class="fg">
+            <label class="fl" for="fCnpj">CNPJ <span class="req">*</span></label>
+            <input class="fi" id="fCnpj" placeholder="00.000.000/0000-00"
+                   inputmode="numeric" maxlength="18" autocomplete="off"
+                   oninput="cliMaskCnpj(this)">
+          </div>
+          <div class="fg">
+            <label class="fl" for="fNome">Nome / Razão social <span class="req">*</span></label>
+            <input class="fi" id="fNome" placeholder="Nome da empresa" maxlength="90" autocomplete="off">
+          </div>
+          <div class="fg">
+            <label class="fl" for="fFilial">Filial</label>
+            <select class="fi" id="fFilial">
+              <option value="SP">São Paulo - SP</option>
+              <option value="PR">Paraná - PR</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl" for="fSenha">Senha</label>
+            <input type="password" class="fi" id="fSenha" placeholder="deixe em branco para usar a padrão"
+                   autocomplete="new-password">
+            <div style="font-size:11px;opacity:.7;margin-top:4px">
+              Em branco = <b>5 primeiros dígitos do CNPJ</b> (senha padrão).
+              Ao editar, em branco <b>mantém</b> a senha atual.
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px">
+          <button type="submit" class="btn" style="width:auto" id="btnSalvar">Salvar cliente</button>
+          <button type="button" class="btn-mini" onclick="cliNovo()">Novo (limpar)</button>
+          <span id="fStatus" style="font-size:12px;opacity:.7"></span>
+        </div>
+      </form>
+    </div>
+
+    <!-- ---------- LISTA ---------- -->
+    <div class="card">
+      <div class="ct" style="margin-bottom:12px">
+        Clientes cadastrados
+        <span id="cliContagem" style="font-weight:400;font-size:12px;opacity:.7"></span>
+      </div>
+
+      <div class="fg" style="margin-bottom:12px">
+        <input class="fi" id="fBusca" placeholder="🔍 Buscar por nome ou CNPJ (digita e filtra)..."
+               autocomplete="off" oninput="cliRenderizar()" style="max-width:440px">
+      </div>
+
+      <div id="cliLista"><div class="alert alert-i">Carregando clientes...</div></div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- RODAPÉ (mesmo texto do portal) -->
+<footer class="rodape">
+  <p class="rodape-destaque">Dúvidas? Fale com a Área da Qualidade ou com o Departamento Comercial (SAC/RNC) do Grupo Galva.</p>
+  <p class="rodape-nota">© <span id="ano"></span> Grupo Galva — Galvanização a Fogo · Guarulhos/SP · Os dados preenchidos são registrados em log de auditoria (ISO 9001).</p>
+</footer>
+
+<div id="admToast" class="toast oculto" role="status"></div>
+
+<script src="js/clientes-admin.js" defer></script>
+
+</body>
+</html>

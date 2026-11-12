@@ -273,9 +273,60 @@ export default async function handler(req, res) {
 
       res.status(200).json({ ok: true, message: 'RNC recebido.', ponteApp });
     } else {
-      const snap = await db.collection('rnc').limit(50).get();
-      const rncs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      res.status(200).json({ rncs });
+      /* GET /api/rnc?cnpj= — contrato da área do cliente (carregar() em
+         js/rnc.js): {ok, cliente, links, notifs, oi, openIssues, rncs},
+         tudo escopado ao CNPJ informado. Sem CNPJ válido devolve o mesmo
+         erro da API original do portal (galvabras-gestao-ti). */
+      const cnpj = soDigitos((req.query || {}).cnpj);
+      if (cnpj.length !== 14) {
+        res.status(400).json({ ok: false, error: 'cnpj', code: 'cnpj', message: 'CNPJ invalido' });
+        return;
+      }
+
+      const fmt = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+      const r = rtdb();
+      const ler = (caminho) => (r ? r.ref(caminho).once('value') : Promise.resolve(null));
+
+      const [signLinks, rncNotifs, openIssues, clientesSnap, pares] = await Promise.all([
+        ler('galvabras/data/signLinks'),
+        ler('galvabras/data/rncNotifs'),
+        ler('galvabras/data/openIssues'),
+        ler('galvabras/data/clientes'),
+        Promise.all([
+          db.collection('rnc').where('cnpj', '==', cnpj).limit(50).get(),
+          db.collection('rnc').where('cnpj', '==', fmt).limit(50).get(),
+        ]),
+      ]);
+
+      const listaDe = (snap) => {
+        const v = snap ? snap.val() : null;
+        if (Array.isArray(v)) return v.filter((x) => x && typeof x === 'object');
+        if (v && typeof v === 'object') return Object.values(v).filter((x) => x && typeof x === 'object');
+        return [];
+      };
+      const meu = (x) => soDigitos(x && x.cnpj) === cnpj;
+
+      /* Cliente do CNPJ (SEM expor hash de senha). */
+      const bruto = listaDe(clientesSnap).find(meu) || null;
+      const cliente = bruto
+        ? (({ senhaHash, senhaTemporaria, ...resto }) => resto)(bruto)
+        : null;
+
+      const links = listaDe(signLinks).filter(meu);
+      const notifs = listaDe(rncNotifs).filter(meu);
+      const oi = listaDe(openIssues).filter(meu);
+
+      /* Chamados do próprio CNPJ ("Meus chamados" do portal). O formato
+         pode ser dígitos (portal) ou mascarado (formulário antigo). */
+      const [a, b] = pares;
+      const vistos = new Set();
+      const docs = [];
+      [...a.docs, ...b.docs].forEach((d) => {
+        if (!vistos.has(d.id)) { vistos.add(d.id); docs.push(d); }
+      });
+      const rncs = docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      res.status(200).json({ ok: true, cliente, links, notifs, oi, openIssues: oi, rncs });
     }
   } catch (e) {
     res.status(500).json({ error: e.message });

@@ -102,10 +102,8 @@
   <p class="rodape-nota">© <span id="ano"></span> Grupo Galva — Galvanização a Fogo · Guarulhos/SP · Os dados preenchidos são registrados em log de auditoria (ISO 9001).</p>
 </footer>
 
-<!-- Firebase Authentication (SDK público — a apiKey é configuração pública, não é segredo) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js" defer></script>
-<!-- Lógica da tela de login (CNPJ → e-mail interno, mensagens amigáveis, sessão) -->
+<!-- Lógica da tela de login (máscara CNPJ, validação, chamada à API
+     /api/login-cliente e sessão do portal) -->
 <script src="js/login-cliente.js" defer></script>
 
 </body>
