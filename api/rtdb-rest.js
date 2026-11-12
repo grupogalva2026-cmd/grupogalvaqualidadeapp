@@ -69,11 +69,10 @@ async function obterAccessToken() {
 
 async function rtdbFetch(caminho, metodo, corpo) {
   const token = await obterAccessToken();
-  const url = RTDB_URL + '/' + caminho.replace(/^\//, '') + '.json';
+  const url = RTDB_URL + '/' + caminho.replace(/^\//, '') + '.json?access_token=' + encodeURIComponent(token);
   const opts = {
     method: metodo,
     headers: {
-      'Authorization': 'Bearer ' + token,
       'Content-Type': 'application/json',
     },
   };
